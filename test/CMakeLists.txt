@@ -3,6 +3,7 @@ set( test_scripts
   run_test_ATM_c96_p8.sh
   run_test_S2S_c96mx100_p8.sh
   run_test_S2SW_c96mx100_p8.sh
+  run_test_S2SWA_c96mx100_p8.sh
 )
 
 #
@@ -27,6 +28,10 @@ endforeach(FILENAME)
 execute_process( COMMAND ${CMAKE_COMMAND} -E copy
       ${CMAKE_CURRENT_SOURCE_DIR}/create_case.sh 
       ${CMAKE_CURRENT_BINARY_DIR}/create_case.sh )
+
+execute_process( COMMAND ${CMAKE_COMMAND} -E copy
+      ${CMAKE_CURRENT_SOURCE_DIR}/prep.sh 
+      ${CMAKE_CURRENT_BINARY_DIR}/prep.sh )
 
 execute_process( COMMAND ${CMAKE_COMMAND} -E copy
       ${CMAKE_CURRENT_SOURCE_DIR}/detect_machine.sh 
@@ -70,4 +75,10 @@ set_tests_properties(test_S2S_c96mx100_p8 PROPERTIES TIMEOUT 7200)
 add_test ( NAME test_S2SW_c96mx100_p8
            COMMAND bash run_test_S2SW_c96mx100_p8.sh
            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test )
-set_tests_properties(test_S2S_c96mx100_p8 PROPERTIES TIMEOUT 7200)
+set_tests_properties(test_S2SW_c96mx100_p8 PROPERTIES TIMEOUT 7200)
+
+#
+add_test ( NAME test_S2SWA_c96mx100_p8
+           COMMAND bash run_test_S2SWA_c96mx100_p8.sh
+           WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test )
+set_tests_properties(test_S2SWA_c96mx100_p8 PROPERTIES TIMEOUT 7200)
