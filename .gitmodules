@@ -1,0 +1,8 @@
+[submodule "global-workflow"]
+	path = global-workflow
+	url = https://github.com/NOAA-EMC/global-workflow.git
+        branch = develop
+[submodule "spack-stack"]
+	path = spack-stack
+	url = https://github.com/NOAA-EMC/spack-stack.git
+        branch = develop
