@@ -37,10 +37,6 @@ execute_process( COMMAND ${CMAKE_COMMAND} -E copy
       ${CMAKE_CURRENT_SOURCE_DIR}/detect_machine.sh 
       ${CMAKE_CURRENT_BINARY_DIR}/detect_machine.sh )
 
-execute_process( COMMAND ${CMAKE_COMMAND} -E copy
-      ${CMAKE_CURRENT_SOURCE_DIR}/run_ctest 
-      ${CMAKE_CURRENT_BINARY_DIR}/run_ctest )
-
 # test names 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests)
 foreach(FILENAME ${test_names})
