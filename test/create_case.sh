@@ -263,6 +263,24 @@ if [[ $MACHINE_ID = orion.* ]]; then
   SCHEDULER=slurm
   cp ${PATHRT}/fv3_conf/fv3_slurm.IN_orion ${PATHRT}/fv3_conf/fv3_slurm.IN
   cp ${PATHRT}/fv3_conf/compile_slurm.IN_orion ${PATHRT}/fv3_conf/compile_slurm.IN
+elif [[ $MACHINE_ID = hera.* ]]; then
+  ACCNR="${ACCNR:-marine-cpu}"
+  QUEUE=debug
+  PARTITION=""
+  dprefix=${EXP_ROOT}
+  DISKNM=/scratch1/NCEPDEV/nems/emc.nemspara/RT
+  PTMP=$dprefix/exp
+  SCHEDULER=slurm
+  cp ${PATHRT}/fv3_conf/fv3_slurm.IN_hera ${PATHRT}/fv3_conf/fv3_slurm.IN
+  cp ${PATHRT}/fv3_conf/compile_slurm.IN_hera ${PATHRT}/fv3_conf/compile_slurm.IN
+else
+  ACCNR=""
+  QUEUE="debug"
+  PARTITION=""
+  dprefix=${EXP_ROOT}
+  DISKNM="${HTF_DIR}/RT"
+  PTMP=$dprefix/exp
+  SCHEDULER=""
 fi
 
 
@@ -323,6 +341,7 @@ CASE=${APP}_${GRID}_${CCPP_SUITE}
 TEST_NAME=""
 if [ -z "${TEST_NAME}" ] ; then
   case ${CASE} in
+    ATM_C96_FV3_GFS_v17_p8) TEST_NAME=control_p8 ;;
     S2S_C96MX100_FV3_GFS_v17_coupled_p8) TEST_NAME=cpld_control_nowav_noaero_p8 ;;
     S2SA_C96MX100_FV3_GFS_v17_coupled_p8) TEST_NAME=cpld_control_nowav_p8 ;;
     S2SW_C96MX100_FV3_GFS_v17_coupled_p8) TEST_NAME=cpld_control_noaero_p8 ;;
@@ -573,6 +592,27 @@ elif [[ $SCHEDULER = 'lsf' ]]; then
     NODES=$(( NODES + 1 ))
   fi
   atparse < $PATHRT/fv3_conf/fv3_bsub.IN > ${RUNDIR}/job_card
+else
+  echo "run model directly with (which mpirun) command! make sure you are on computing node!" 
+  
+  cd ${RUNDIR}
+  source ./module-setup.sh
+  module use $( pwd -P )
+  module load modules.fv3
+  module list
+  MPIRUN=$(which srun)
+  [[ -z $MPIRUN ]] && MPIRUN=$(which mpirun)
+  echo "MPIRUN is $MPIRUN"
+  ulimit -s unlimited
+  export OMP_STACKSIZE=512M
+  export KMP_AFFINITY=scatter
+  export OMP_NUM_THREADS=1
+  #sync && sleep 1
+  #srun --label -n ${TASKS} ./fv3.exe 2> err 1> out
+  echo "starting model run!!!"
+  $MPIRUN -n ${TASKS} ./fv3.exe 2> err 1> out
+  #$MPIRUN --label -n ${TASKS} ./fv3.exe 2> err 1> out
+  echo "done fv3.exe run"
 fi
 
 #

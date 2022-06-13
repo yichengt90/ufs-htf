@@ -1,0 +1,14 @@
+#!/bin/sh
+#SBATCH --account=epic-ps
+#SBATCH --qos=debug
+##SBATCH --partition=service
+#SBATCH --nodes=5
+#SBATCH --ntasks-per-node=40
+#SBATCH --time=30
+#SBATCH --job-name="htf_ctest"
+#SBATCH --exclusive
+
+#
+ctest
+#
+#ctest -VV -R test_S2S_c96mx100_p8
