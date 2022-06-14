@@ -201,6 +201,10 @@ if [ "${DOWNLOAD}" = true ] ; then
     echo "no input-data/GOCART, create now"
     mkdir -p input-data/GOCART
     aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART input-data/GOCART --recursive --exclude '*' --include 'p8/*'
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART/ExtData/dust/randomforestensemble_uthres.nc ./input-data/GOCART/p8/ExtData/dust
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART/ExtData/dust/gocart.dust_source.v5a.x1152_y721.nc ./input-data/GOCART/p8/ExtData/dust
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART/ExtData/dust/FENGSHA_Albedo_drag_v1.nc ./input-data/GOCART/p8/ExtData/dust
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART/ExtData/dust/FENGSHA_SOILGRIDS2019_GEFSv12_v1.2.nc ./input-data/GOCART/p8/ExtData/dust
   fi
 
   # IMP_PHYSICS = 8
