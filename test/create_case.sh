@@ -85,6 +85,8 @@ OPTIONS
       exp root folder; default is UFS-WM_DIR/tests
   --use_user_var
       use user define var from user_define_var.sh
+  -r, --remote
+      use remote input data, default is false
   -v, --verbose
       build with verbose output
 
@@ -104,6 +106,7 @@ Settings:
   CCPP_SUITE=${CCPP_SUITE}
   EXP_ROOT=${EXP_ROOT}
   USE_USER_VAR=${USE_USER_VAR}
+  REMOTE=${REMOTE}
   VERBOSE=${VERBOSE}
 
 EOF_SETTINGS
@@ -127,6 +130,7 @@ GRID="C96MX100"
 CCPP_SUITE="FV3_GFS_v17_coupled_p8"
 EXP_ROOT=${HTF_DIR}
 USE_USER_VAR=false
+REMOTE=false
 VERBOSE=false
 
 # process required arguments
@@ -155,6 +159,8 @@ while :; do
     --exp_root|--exp_root=) usage_error "$1 requires argument." ;;
     --use_user_var) USE_USER_VAR=true ;;
     --use_user_var=?*|--use_user_var=) usage_error "$1 argument ignored." ;; 
+    --remote|-r) REMOTE=true ;;
+    --remote=?*|--remote=) usage_error "$1 argument ignored." ;;
     --verbose|-v) VERBOSE=true ;;
     --verbose=?*|--verbose=) usage_error "$1 argument ignored." ;;
     -?*|?*) usage_error "Unknown option $1" ;;
@@ -347,6 +353,15 @@ NEW_BASELINE=${PTMP}/FV3_RT/REGRESSION_TEST
 INPUTDATA_ROOT=${INPUTDATA_ROOT:-$DISKNM/NEMSfv3gfs/input-data-20220414}
 INPUTDATA_ROOT_WW3=${INPUTDATA_ROOT}/WW3_input_data_20220418
 INPUTDATA_ROOT_BMIC=${INPUTDATA_ROOT_BMIC:-$DISKNM/NEMSfv3gfs/BM_IC-20220207}
+
+if [ $REMOTE=true ] ; then
+   echo "use input data downloaded from s3"
+   unset DISKNM INPUTDATA_ROOT INPUTDATA_ROOT_BMIC INPUTDATA_ROOT_WW3
+   DISKNM=${HTF_DIR}
+   INPUTDATA_ROOT=$DISKNM/input-data
+   INPUTDATA_ROOT_WW3=${INPUTDATA_ROOT}/WW3_input_data
+   INPUTDATA_ROOT_BMIC=${INPUTDATA_ROOT}/BM_IC
+fi
 
 source ${PATHRT}/default_vars.sh
 

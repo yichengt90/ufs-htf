@@ -5,7 +5,7 @@
 # usage instructions
 usage () {
 cat << EOF_USAGE
-Usage: $0 --platform=PLATFORM
+Usage: $0 --platform=PLATFORM [options]
 
 OPTIONS
   -h, --help
@@ -13,7 +13,8 @@ OPTIONS
   -p, --platform=PLATFORM
       name of machine you are working on
       (e.g. hera | gaea | orion)
-
+  -d
+      download input data
 EOF_USAGE
 }
 
@@ -59,6 +60,8 @@ while :; do
     --help|-h) usage; exit 0 ;;
     --platform=?*|-p=?*) PLATFORM=${1#*=} ;;
     --platform|--platform=|-p|-p=) usage_error "$1 requires argument." ;;
+    -d) DOWNLOAD=true ;;
+    -d=?*|-d=) usage_error "$1 argument ignored." ;;
     -?*|?*) usage_error "Unknown option $1" ;;
     *) break
   esac
@@ -80,3 +83,141 @@ case ${PLATFORM} in
     *)
       printf "WARNING: ${PLATFORM} is not supported yet! Stop now! \n"; exit 1 ;;
 esac
+
+
+# Download data for ctests
+if [ "${DOWNLOAD}" = true ] ; then
+
+  #
+  echo "get input data from s3!"
+
+  # firt install aws-cli
+  if [ -d "/home/${USER}/aws-cli" ]; then
+    echo "aws-cli existed" 
+  else
+    CURRENT_FOLDER=${PWD}
+    cd
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    ./aws/install -i /home/${USER}/aws-cli -b /home/${USER}/aws-cli/bin
+    cd ${CURRENT_FOLDER}
+  fi
+  export PATH=/home/${USER}/aws-cli/bin:$PATH
+
+  # now download data for ctest cases
+
+  if [ -d "./input-data/FV3_fix" ]; then
+    echo "FV3_fix existed" 
+  else
+    echo "no input-data/FV3_fix, create now"
+    mkdir -p input-data/FV3_fix
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_fix input-data/FV3_fix --recursive
+  fi
+
+  # FV3_fix_tiled 
+  if [ -d "./input-data/FV3_fix_tiled" ]; then
+    echo "FV3_fix_tiled existed" 
+  else
+    echo "no input-data/FV3_fix_tiled, create now"
+    mkdir -p input-data/FV3_fix_tiled
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_fix_tiled input-data/FV3_fix_tiled --recursive \
+            --exclude 'C384/*' --exclude 'C48/*'
+  fi
+
+  # CPL_FIX
+  if [ -d "./input-data/CPL_FIX" ]; then
+    echo "CPL_FIX existed" 
+  else
+    echo "no input-data/CPL_FIX, create now"
+    mkdir -p input-data/CPL_FIX
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/CPL_FIX input-data/CPL_FIX --recursive
+  fi
+
+  # CICE_FIX
+  if [ -d "./input-data/CICE_FIX" ]; then
+    echo "CICE_FIX existed" 
+  else
+    echo "no input-data/CICE_FIX, create now"
+    mkdir -p input-data/CICE_FIX
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/CICE_FIX input-data/CICE_FIX --recursive --exclude '400/*' --exclude '025/*'
+  fi
+
+  # CICE_IC
+  if [ -d "./input-data/CICE_IC" ]; then
+    echo "CICE_IC existed" 
+  else
+    echo "no input-data/CICE_IC, create now"
+    mkdir -p input-data/CICE_IC
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/CICE_IC input-data/CICE_IC --recursive --exclude '400/*' --exclude '025/*'
+  fi
+
+  # MOM6_FIX
+  if [ -d "./input-data/MOM6_FIX" ]; then
+    echo "MOM6_FIX existed" 
+  else
+    echo "no input-data/MOM6_FIX, create now"
+    mkdir -p input-data/MOM6_FIX
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/MOM6_FIX input-data/MOM6_FIX --recursive --exclude '400/*' --exclude '025/*'
+  fi
+
+  # MOM6_IC
+  if [ -d "./input-data/MOM6_IC" ]; then
+    echo "MOM6_IC existed" 
+  else
+    echo "no input-data/MOM6_IC, create now"
+    mkdir -p input-data/MOM6_IC
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/MOM6_IC input-data/MOM6_IC --recursive --exclude '400/*' --exclude '025/*'
+  fi
+
+  # WW3 
+  if [ -d "./input-data/WW3_input_data" ]; then
+    echo "WW3_input_data existed" 
+  else
+    echo "no input-data/WW3_input_data, create now"
+    mkdir -p input-data/WW3_input_data
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/WW3_input_data_20211113 input-data/WW3_input_data --recursive
+  fi
+
+  # GOCART
+  if [ -d "./input-data/GOCART" ]; then
+    echo "GOCART existed" 
+  else
+    echo "no input-data/GOCART, create now"
+    mkdir -p input-data/GOCART
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART input-data/GOCART --recursive --exclude '*' --include 'p8/*'
+  fi
+
+  # IMP_PHYSICS = 8
+  if [ -d "./input-data/FV3_input_data_gsd" ]; then
+    echo "FV3_input_data_gsd existed" 
+  else
+    echo "no input-data/FV3_input_data_gsd, create now"
+    mkdir -p input-data/FV3_input_data_gsd
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_input_data_gsd input-data/FV3_input_data_gsd --recursive \
+              --exclude '*' \
+              --include 'CCN_ACTIVATE.BIN' --include 'freezeH2O.dat' --include 'qr_acr_qgV2.dat' --include 'qr_acr_qsV2.dat' --include 'qr_acr_qg.dat' --include 'qr_acr_qs.dat'
+  fi
+
+  # merra2
+  if [ -d "./input-data/FV3_input_data_INCCN_aeroclim" ]; then
+    echo "FV3_input_data_INCCN_aeroclim existed" 
+  else
+    echo "no input-data/FV3_input_data_INCCN_aeroclim, create now"
+    mkdir -p input-data/FV3_input_data_INCCN_aeroclim
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_input_data_INCCN_aeroclim input-data/FV3_input_data_INCCN_aeroclim --recursive \
+              --exclude '*' \
+              --include 'MERRA2/*' --include 'aer_data/*'
+  fi
+
+  #C96
+  if [ -d "./input-data/FV3_input_data" ]; then
+    echo "FV3_input_data existed" 
+  else
+    echo "no input-data/FV3_input_data, create now"
+    mkdir -p input-data/FV3_input_data
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_input_data input-data/FV3_input_data --recursive
+  fi
+
+
+
+fi
