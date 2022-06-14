@@ -1,6 +1,20 @@
 #!/bin/bash
 
 die() { echo "$@" >&2; exit 1; }
+
+function select_case() {
+case ${CASE} in
+  ATM_C96_FV3_GFS_v17_p8)                 TEST_NAME=control_p8 ;;
+  S2S_C96MX100_FV3_GFS_v17_coupled_p8)    TEST_NAME=cpld_control_nowav_noaero_p8 ;;
+  S2SA_C96MX100_FV3_GFS_v17_coupled_p8)   TEST_NAME=cpld_control_nowav_p8 ;;
+  S2SW_C96MX100_FV3_GFS_v17_coupled_p8)   TEST_NAME=cpld_control_noaero_p8 ;;
+  S2SWA_C96MX100_FV3_GFS_v17_coupled_p8)  TEST_NAME=cpld_control_p8 ;;
+  S2SWA_C192MX050_FV3_GFS_v17_coupled_p8) TEST_NAME=cpld_control_c192_p8 ;;
+  *)
+    printf "WARNING: ${CASE} is not supported yet! Stop now! \n"; exit 1 ;;
+esac
+}
+
 function compute_petbounds() {
   # each test MUST define ${COMPONENT}_tasks variable for all components it is using
   # and MUST NOT define those that it's not using or set the value to 0.
@@ -199,9 +213,9 @@ fi
 printf "MODULE_FILE=${MODULE_FILE}\n" >&2
 
 # Before we go on load modules, we first need to activate Lmod for some systems
-if [ "${PLATFORM}" = gaea ] ; then
-  source /lustre/f2/pdata/esrl/gsd/contrib/lua-5.1.4.9/init/init_lmod.sh
-fi
+#if [ "${PLATFORM}" = gaea ] ; then
+#  source /lustre/f2/pdata/esrl/gsd/contrib/lua-5.1.4.9/init/init_lmod.sh
+#fi
 
 # source the module file for this platform/compiler combination, then load workflow 
 #printf "... Load MODULE_FILE ...\n"
@@ -340,31 +354,9 @@ source ${PATHRT}/default_vars.sh
 CASE=${APP}_${GRID}_${CCPP_SUITE}
 TEST_NAME=""
 if [ -z "${TEST_NAME}" ] ; then
-  case ${CASE} in
-    ATM_C96_FV3_GFS_v17_p8) TEST_NAME=control_p8 ;;
-    S2S_C96MX100_FV3_GFS_v17_coupled_p8) TEST_NAME=cpld_control_nowav_noaero_p8 ;;
-    S2SA_C96MX100_FV3_GFS_v17_coupled_p8) TEST_NAME=cpld_control_nowav_p8 ;;
-    S2SW_C96MX100_FV3_GFS_v17_coupled_p8) TEST_NAME=cpld_control_noaero_p8 ;;
-    S2SWA_C96MX100_FV3_GFS_v17_coupled_p8) TEST_NAME=cpld_control_p8 ;;
-    S2SWA_C192MX050_FV3_GFS_v17_coupled_p8) TEST_NAME=cpld_control_c192_p8 ;;
-    *)
-      printf "WARNING: ${CASE} is not supported yet! Stop now! \n"; exit 1 ;;
-  esac
+  select_case
 fi
 
-# get test name based on user configuration
-#if [ ${APP} == "S2SWA" ]; then
-#   TEST1="cpld_"
-#fi
-#if [ ${CCPP_SUITE} == "FV3_GFS_v17_coupled_p8" ]; then
-#  TEST3="_p8"
-#fi
-#if [ ${GRID:0:3} == "C96" ]; then
-#  TEST2="control"
-#elif [ ${GRID:0:4} == "C192" ]; then
-#  TEST2="control_c192"
-#fi
-#TEST_NAME=${TEST1}${TEST2}${TEST3}
 echo $TEST_NAME
 
 # check if test name existed in RT tests folder
@@ -604,11 +596,13 @@ else
   [[ -z $MPIRUN ]] && MPIRUN=$(which mpirun)
   echo "MPIRUN is $MPIRUN"
   ulimit -s unlimited
-  export OMP_STACKSIZE=512M
+  export OMP_STACKSIZE=1024M
   export KMP_AFFINITY=scatter
   export OMP_NUM_THREADS=1
-  #sync && sleep 1
-  #srun --label -n ${TASKS} ./fv3.exe 2> err 1> out
+  export MPI_TYPE_DEPTH=20
+  export ESMF_RUNTIME_COMPLIANCECHECK=OFF:depth=4
+  export PSM_RANKS_PER_CONTEXT=4
+  export PSM_SHAREDCONTEXTS=1
   echo "starting model run!!!"
   $MPIRUN -n ${TASKS} ./fv3.exe 2> err 1> out
   #$MPIRUN --label -n ${TASKS} ./fv3.exe 2> err 1> out

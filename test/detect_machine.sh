@@ -76,6 +76,7 @@ case $(hostname -f) in
   hfe11)                   MACHINE_ID=hera ;; ### hera11
   hfe12)                   MACHINE_ID=hera ;; ### hera12
   hecflow01)               MACHINE_ID=hera ;; ### heraecflow01
+  h*c*)                    MACHINE_ID=hera ;; ### hera computing node
 
   s4-submit.ssec.wisc.edu) MACHINE_ID=s4 ;; ### s4
 

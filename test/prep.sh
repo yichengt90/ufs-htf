@@ -17,6 +17,20 @@ OPTIONS
 EOF_USAGE
 }
 
+create_slurm_hera() {
+cat << EOF > run_slurm_job
+#!/bin/sh
+#SBATCH --account=marine-cpu
+#SBATCH --qos=batch
+#SBATCH --nodes=5
+#SBATCH --ntasks-per-node=40
+#SBATCH --time=02:00:00
+#SBATCH --job-name="htf_ctest"
+#
+ctest
+EOF
+}
+
 create_slurm_orion() {
 cat << EOF > run_slurm_job
 #!/bin/sh
@@ -62,6 +76,7 @@ fi
 PLATFORM="${PLATFORM,,}"
 case ${PLATFORM} in
   orion) create_slurm_orion ;;
+  hera) create_slurm_hera ;;
     *)
       printf "WARNING: ${PLATFORM} is not supported yet! Stop now! \n"; exit 1 ;;
 esac

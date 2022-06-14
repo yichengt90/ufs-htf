@@ -6,6 +6,7 @@ VAR1="${SCRIPT_ROOT}/../../src/ufs-weather-model"
 echo "UFS root is ${VAR1}"
 
 # detect PLATFORM NAME
+echo $(hostname -f)
 source ./detect_machine.sh
 VAR2=${MACHINE_ID%%.*}
 unset MACHINE_ID RT_COMPILER

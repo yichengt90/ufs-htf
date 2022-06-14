@@ -7,6 +7,7 @@ echo "UFS root is ${VAR1}"
 
 # detect PLATFORM NAME
 #source ${VAR1}/tests/detect_machine.sh
+echo $(hostname -f)
 source ./detect_machine.sh
 VAR2=${MACHINE_ID%%.*}
 unset MACHINE_ID RT_COMPILER
