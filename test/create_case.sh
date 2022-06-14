@@ -251,6 +251,10 @@ if [ -f "${UFS_ROOT}/tests/fv3_${APP}_${CCPP_SUITE}.exe" ]; then
   echo "${UFS_ROOT}/tests/fv3_${APP}_${CCPP_SUITE}.exe exists, skip build step" 
 else
   echo "build ufs model!"
+  if [ "${PLATFORM}" = gaea ] ; then
+    tmp_string=$(sed -n '64p' ${UFS_ROOT}/tests/compile.sh)
+    [[ ${tmp_string: -1} == "h" ]] && sed -i 's/init_lmod.sh/init_lmod.sh || true/g' ${UFS_ROOT}/tests/compile.sh
+  fi
   ${UFS_ROOT}/tests/compile.sh ${PLATFORM}.${COMPILER} "-DAPP=${APP} -DCCPP_SUITES=${CCPP_SUITE}" "${APP}_${CCPP_SUITE}" YES YES 2>&1 | tee compile.log
 fi
 
@@ -293,6 +297,16 @@ elif [[ $MACHINE_ID = hera.* ]]; then
   SCHEDULER=slurm
   cp ${PATHRT}/fv3_conf/fv3_slurm.IN_hera ${PATHRT}/fv3_conf/fv3_slurm.IN
   cp ${PATHRT}/fv3_conf/compile_slurm.IN_hera ${PATHRT}/fv3_conf/compile_slurm.IN
+elif [[ $MACHINE_ID = gaea.* ]]; then
+  ACCNR="${ACCNR:-nggps_emc}"
+  QUEUE=normal
+  PARTITION=c4
+  dprefix=${EXP_ROOT}
+  DISKNM=/lustre/f2/pdata/ncep_shared/emc.nemspara/RT
+  PTMP=$dprefix/exp
+  SCHEDULER=slurm
+  cp ${PATHRT}/fv3_conf/fv3_slurm.IN_gaea ${PATHRT}/fv3_conf/fv3_slurm.IN
+  cp ${PATHRT}/fv3_conf/compile_slurm.IN_gaea ${PATHRT}/fv3_conf/compile_slurm.IN
 else
   ACCNR=""
   QUEUE="debug"
@@ -612,6 +626,7 @@ else
   echo "MPIRUN is $MPIRUN"
   ulimit -s unlimited
   export OMP_STACKSIZE=1024M
+  export NC_BLKSZ=1M 
   export KMP_AFFINITY=scatter
   export OMP_NUM_THREADS=1
   export MPI_TYPE_DEPTH=20

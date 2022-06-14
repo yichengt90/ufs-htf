@@ -32,6 +32,21 @@ ctest
 EOF
 }
 
+create_slurm_gaea() {
+cat << EOF > run_slurm_job
+#!/bin/bash -l
+#SBATCH --job-name="htf_ctest"
+#SBATCH --account=nggps_emc
+#SBATCH --qos=normal
+#SBATCH --clusters=c4
+#SBATCH --nodes=6
+#SBATCH --ntasks-per-node=36
+#SBATCH --time=02:00:00
+#
+ctest
+EOF
+}
+
 create_slurm_orion() {
 cat << EOF > run_slurm_job
 #!/bin/sh
@@ -79,7 +94,8 @@ fi
 PLATFORM="${PLATFORM,,}"
 case ${PLATFORM} in
   orion) create_slurm_orion ;;
-  hera) create_slurm_hera ;;
+  hera)  create_slurm_hera ;;
+  gaea)  create_slurm_gaea ;;
     *)
       printf "WARNING: ${PLATFORM} is not supported yet! Stop now! \n"; exit 1 ;;
 esac
