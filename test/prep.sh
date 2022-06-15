@@ -108,17 +108,17 @@ if [ "${DOWNLOAD}" = true ] ; then
   echo "get input data from s3!"
 
   # firt install aws-cli
-  if [ -d "/home/${USER}/aws-cli" ]; then
+  if [ -d "${HOME}/aws-cli" ]; then
     echo "aws-cli existed" 
   else
     CURRENT_FOLDER=${PWD}
     cd
     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"
     unzip awscliv2.zip
-    ./aws/install -i /home/${USER}/aws-cli -b /home/${USER}/aws-cli/bin
+    ./aws/install -i ${HOME}/aws-cli -b ${HOME}/aws-cli/bin
     cd ${CURRENT_FOLDER}
   fi
-  export PATH=/home/${USER}/aws-cli/bin:$PATH
+  export PATH=${HOME}/aws-cli/bin:$PATH
 
   # now download data for ctest cases
 
@@ -128,6 +128,22 @@ if [ "${DOWNLOAD}" = true ] ; then
     echo "no input-data/FV3_fix, create now"
     mkdir -p input-data/FV3_fix
     aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_fix input-data/FV3_fix --recursive
+  fi
+
+  # regional data
+  if [ -d "./input-data/fv3_regional_control" ]; then
+    echo "fv3_regional_control existed" 
+  else
+    echo "no input-data/fv3_regional_control, create now"
+    mkdir -p input-data/fv3_regional_control
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/fv3_regional_control input-data/fv3_regional_control --recursive
+  fi
+  if [ -d "./input-data/FV3_regional_input_data" ]; then
+    echo "FV3_regional_input_data existed" 
+  else
+    echo "no input-data/FV3_regional_input_data, create now"
+    mkdir -p input-data/FV3_regional_input_data
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_regional_input_data input-data/FV3_regional_input_data --recursive
   fi
 
   # FV3_fix_tiled 

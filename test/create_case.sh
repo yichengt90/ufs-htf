@@ -4,12 +4,13 @@ die() { echo "$@" >&2; exit 1; }
 
 function select_case() {
 case ${CASE} in
-  ATM_C96_FV3_GFS_v17_p8)                 TEST_NAME=control_p8 ;;
-  S2S_C96MX100_FV3_GFS_v17_coupled_p8)    TEST_NAME=cpld_control_nowav_noaero_p8 ;;
-  S2SA_C96MX100_FV3_GFS_v17_coupled_p8)   TEST_NAME=cpld_control_nowav_p8 ;;
-  S2SW_C96MX100_FV3_GFS_v17_coupled_p8)   TEST_NAME=cpld_control_noaero_p8 ;;
-  S2SWA_C96MX100_FV3_GFS_v17_coupled_p8)  TEST_NAME=cpld_control_p8 ;;
-  S2SWA_C192MX050_FV3_GFS_v17_coupled_p8) TEST_NAME=cpld_control_c192_p8 ;;
+  ATM_regional_FV3_GFS_v15_thompson_mynn)  TEST_NAME=regional_control ;;	
+  ATM_C96_FV3_GFS_v17_p8)                  TEST_NAME=control_p8 ;;
+  S2S_C96MX100_FV3_GFS_v17_coupled_p8)     TEST_NAME=cpld_control_nowav_noaero_p8 ;;
+  S2SA_C96MX100_FV3_GFS_v17_coupled_p8)    TEST_NAME=cpld_control_nowav_p8 ;;
+  S2SW_C96MX100_FV3_GFS_v17_coupled_p8)    TEST_NAME=cpld_control_noaero_p8 ;;
+  S2SWA_C96MX100_FV3_GFS_v17_coupled_p8)   TEST_NAME=cpld_control_p8 ;;
+  S2SWA_C192MX050_FV3_GFS_v17_coupled_p8)  TEST_NAME=cpld_control_c192_p8 ;;
   *)
     printf "WARNING: ${CASE} is not supported yet! Stop now! \n"; exit 1 ;;
 esac
