@@ -5,6 +5,7 @@ set( test_scripts
   run_test_S2S_c96mx100_p8.sh
   run_test_S2SW_c96mx100_p8.sh
   run_test_S2SWA_c96mx100_p8.sh
+  run_test_S2SWA_c192mx050_p8.sh
 )
 
 #
@@ -85,3 +86,9 @@ add_test ( NAME test_S2SWA_c96mx100_p8
            COMMAND bash run_test_S2SWA_c96mx100_p8.sh
            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test )
 set_tests_properties(test_S2SWA_c96mx100_p8 PROPERTIES TIMEOUT 7200)
+
+#
+add_test ( NAME test_S2SWA_c192mx050_p8
+           COMMAND bash run_test_S2SWA_c192mx050_p8.sh
+           WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test )
+set_tests_properties(test_S2SWA_c192mx050_p8 PROPERTIES TIMEOUT 7200)

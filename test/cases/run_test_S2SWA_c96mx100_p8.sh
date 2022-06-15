@@ -18,7 +18,7 @@ cat << EOF > user_define_var.sh
 export DAYS=0.125
 export FHMAX=3
 export RESTART_N=3
-export RESTART_INTERVAL="${RESTART_N} -1"
+export RESTART_INTERVAL="3 -1"
 export OUTPUT_FH="3 -1"
 export FHZERO=3
 export SCHEDULER=""

@@ -20,9 +20,9 @@ export FHMAX=3
 export RESTART_N=3
 export RESTART_INTERVAL="3 -1"
 export OUTPUT_FH="3 -1"
-#export FHZERO=3
+export FHZERO=3
 export SCHEDULER=""
 EOF
 
 # run create case script
-echo "R" | ./create_case.sh --platform=${VAR2} --ufs_root=${VAR1} --app=ATM --grid=regional --ccpp=FV3_GFS_v15_thompson_mynn --use_user_var -v
+echo "R" | ./create_case.sh --platform=${VAR2} --ufs_root=${VAR1} --app=S2SWA --grid=C192MX050 --ccpp=FV3_GFS_v17_coupled_p8 --use_user_var -v
