@@ -23,7 +23,7 @@ cat << EOF > run_slurm_job
 #!/bin/sh
 #SBATCH --account=marine-cpu
 #SBATCH --qos=batch
-#SBATCH --nodes=5
+#SBATCH --nodes=12
 #SBATCH --ntasks-per-node=40
 #SBATCH --time=02:00:00
 #SBATCH --job-name="htf_ctest"
@@ -39,7 +39,7 @@ cat << EOF > run_slurm_job
 #SBATCH --account=nggps_emc
 #SBATCH --qos=normal
 #SBATCH --clusters=c4
-#SBATCH --nodes=6
+#SBATCH --nodes=13
 #SBATCH --ntasks-per-node=36
 #SBATCH --time=02:00:00
 #
@@ -53,7 +53,7 @@ cat << EOF > run_slurm_job
 #SBATCH --account=epic-ps
 #SBATCH --qos=batch
 #SBATCH --partition=orion
-#SBATCH --nodes=5
+#SBATCH --nodes=12
 #SBATCH --ntasks-per-node=40
 #SBATCH --time=02:00:00
 #SBATCH --job-name="htf_ctest"
@@ -254,6 +254,13 @@ if [ "${DOWNLOAD}" = true ] ; then
     aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_input_data input-data/FV3_input_data --recursive
   fi
 
-
+  #C192
+  if [ -d "./input-data/FV3_input_data192" ]; then
+    echo "FV3_input_data192 existed" 
+  else
+    echo "no input-data/FV3_input_data192, create now"
+    mkdir -p input-data/FV3_input_data192
+    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_input_data192 input-data/FV3_input_data192 --recursive
+  fi
 
 fi
