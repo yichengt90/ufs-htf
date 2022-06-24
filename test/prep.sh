@@ -266,16 +266,39 @@ else
 fi
 
 #get inputdata
-aws s3 cp --no-sign-request s3://my-ufs-inputdata/2019071100.tar.gz ./inputdata/
-cd ./inputdata
-tar -zxvf 2019071100.tar.gz
-cd ..
+if [ -f ./inputdata/2019071100.tar.gz ]; then
+   echo "./inputdata/2019071100.tar.gz already there!"
+else
+   aws s3 cp --no-sign-request s3://my-ufs-inputdata/2019071100.tar.gz ./inputdata/
+   cd ./inputdata
+   tar -zxvf 2019071100.tar.gz
+   cd ..
+fi
 
 # gen link
 if [ -z $GW_DIR ]; then
   echo "path of global workflow is not given, use default path: ${WORK_DIR}/../../global-workflow/"
-  ln -fs ${WORK_DIR}/fix_new/fix_* ${WORK_DIR}/../../global-workflow/fix/
+  GW_DIR=${WORK_DIR}/../../global-workflow
+  ln -fs ${WORK_DIR}/fix_new/fix_* ${GW_DIR}/fix/
 else
   echo global workflow is located: ${GW_DIR}
   ln -fs ${WORK_DIR}/fix_new/fix_* ${GW_DIR}/fix/
 fi
+
+#
+ln -fs ${GW_DIR}/sorc/ufs_model.fd/FV3/upp ${GW_DIR}/sorc/upp.fd
+
+# link ufs_model
+ln -fs  ${GW_DIR}/sorc/ufs_model.fd/build/ufs_model ${GW_DIR}/exec/
+
+#
+for file in postxconfig-NT-GEFS-ANL.txt postxconfig-NT-GEFS-F00.txt postxconfig-NT-GEFS.txt postxconfig-NT-GFS-ANL.txt \
+    postxconfig-NT-GFS-F00-TWO.txt postxconfig-NT-GFS-F00.txt postxconfig-NT-GFS-FLUX-F00.txt postxconfig-NT-GFS-FLUX.txt \
+    postxconfig-NT-GFS-GOES.txt postxconfig-NT-GFS-TWO.txt postxconfig-NT-GFS-WAFS-ANL.txt postxconfig-NT-GFS-WAFS.txt \
+    postxconfig-NT-GFS.txt postxconfig-NT-gefs-aerosol.txt postxconfig-NT-gefs-chem.txt params_grib2_tbl_new \
+    post_tag_gfs128 post_tag_gfs65 gtg.config.gfs gtg_imprintings.txt \
+    AEROSOL_LUTS.datoptics_luts_DUST.dat optics_luts_SALT.dat optics_luts_SOOT.dat optics_luts_SUSO.dat optics_luts_WASO.dat \
+    ; do
+    ln -fs ${GW_DIR}/sorc/upp.fd/parm/$file ${GW_DIR}/parm/post/$file 
+done
+
