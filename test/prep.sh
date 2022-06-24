@@ -1,5 +1,26 @@
 #!/bin/bash
 
+usage() {
+  echo
+  echo "Usage: $0 -p <path of global workflow> | -h "
+  echo
+  echo "  -p GW_DIR"
+  echo "  -h  print this help message and exit"
+  echo
+  exit 1
+}
+
+GW_DIR=""
+while getopts ":p:h" flag;
+
+do
+        case "${flag}" in
+                p) GW_DIR="${OPTARG}";;
+                h) usage;;
+                *) echo "Invalid options: -$flag" ;;
+        esac
+done
+
 set -eu
 
 #get fix data from s3 for ufs test case
@@ -246,4 +267,10 @@ fi
 
 
 # gen link
-ln -fs ${WORK_DIR}/fix_new/fix_* ${WORK_DIR}/../global-workflow/fix/
+if [ -z $GW_DIR ]; then
+  echo "path of global workflow is not given, use default path: ${WORK_DIR}/../../global-workflow/"
+  ln -fs ${WORK_DIR}/fix_new/fix_* ${WORK_DIR}/../../global-workflow/fix/
+else
+  echo global workflow is located: ${GW_DIR}
+  ln -fs ${WORK_DIR}/fix_new/fix_* ${GW_DIR}/fix/
+fi

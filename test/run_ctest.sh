@@ -15,7 +15,7 @@ OPTIONS
       (e.g. 96)
   --case=CASE
       cases selected from ufs case studies
-      default is none
+  --gw_path=GW_DIR
   --ctest
       ctest mode
   -v, --verbose
@@ -62,7 +62,7 @@ esac
 
 # default settings
 TEST_DIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )" )" && pwd -P)
-ROOT_DIR="$(dirname "$TEST_DIR")"
+ROOT_DIR="$(dirname $(dirname "$TEST_DIR"))"
 GW_DIR=${ROOT_DIR}/global-workflow
 APP="ATM"
 GRID="96"
@@ -106,6 +106,8 @@ while :; do
     --grid|--grid=) usage_error "$1 requires argument." ;;
     --case=?*) CASE=${1#*=} ;;
     --case|--case=) usage_error "$1 requires argument." ;;
+    --gw_path=?*) GW_DIR=${1#*=} ;;
+    --gw_path|--gw_path=) usage_error "$1 requires argument." ;;
     --ctest) CTEST=true ;;
     --ctest=?*|--ctest=) usage_error "$1 argument ignored." ;;
     --verbose|-v) VERBOSE=true ;;
