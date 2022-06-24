@@ -60,6 +60,14 @@ case ${PLATFORM} in
 esac
 }
 
+# print usage error and exit
+usage_error () {
+  printf "ERROR: $1\n" >&2
+  usage >&2
+  exit 1
+}
+
+
 # default settings
 TEST_DIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )" )" && pwd -P)
 ROOT_DIR="$(dirname $(dirname "$TEST_DIR"))"
@@ -112,8 +120,8 @@ while :; do
     --ctest=?*|--ctest=) usage_error "$1 argument ignored." ;;
     --verbose|-v) VERBOSE=true ;;
     --verbose=?*|--verbose=) usage_error "$1 argument ignored." ;;
-    -?*|?*) usage_error "Unknown option $1" ;;
-    *) break
+    -?*|?*) echo "Unknown option $1" ;;
+    *) break  
   esac
   shift
 done

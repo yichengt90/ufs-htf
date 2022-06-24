@@ -43,6 +43,12 @@ set_tests_properties(test_get_ufs_fix_data PROPERTIES TIMEOUT 7200)
 
 #
 add_test ( NAME test_ATM_c96_Barry
-           COMMAND bash run_ctest.sh --app=ATM --grid=96 --case=Barry
+           COMMAND bash run_ctest.sh --app=ATM --grid=96 --case=Barry --ctest -v 
            WORKING DIRECTORY ${CMAKE_BINARY_DIR}/test )
 set_tests_properties(test_ATM_c96_Barry PROPERTIES TIMEOUT 7200)
+
+#
+add_test ( NAME test_S2S_c96_Barry
+           COMMAND bash run_ctest.sh --app=S2S --grid=96 --case=Barry --ctest -v
+           WORKING DIRECTORY ${CMAKE_BINARY_DIR}/test )
+set_tests_properties(test_S2S_c96_Barry PROPERTIES TIMEOUT 7200)
