@@ -1,266 +1,249 @@
 #!/bin/bash
 
-#prep script for htf_ctest
+set -eu
 
-# usage instructions
-usage () {
-cat << EOF_USAGE
-Usage: $0 --platform=PLATFORM [options]
+#get fix data from s3 for ufs test case
+WORK_DIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )" )" && pwd -P)
+echo $WORK_DIR
 
-OPTIONS
-  -h, --help
-      show this help guide
-  -p, --platform=PLATFORM
-      name of machine you are working on
-      (e.g. hera | gaea | orion)
-  -d
-      download input data
-EOF_USAGE
-}
-
-create_slurm_hera() {
-cat << EOF > run_slurm_job
-#!/bin/sh
-#SBATCH --account=marine-cpu
-#SBATCH --qos=batch
-#SBATCH --nodes=12
-#SBATCH --ntasks-per-node=40
-#SBATCH --time=02:00:00
-#SBATCH --job-name="htf_ctest"
-#
-ctest
-EOF
-}
-
-create_slurm_gaea() {
-cat << EOF > run_slurm_job
-#!/bin/bash -l
-#SBATCH --job-name="htf_ctest"
-#SBATCH --account=nggps_emc
-#SBATCH --qos=normal
-#SBATCH --clusters=c4
-#SBATCH --nodes=13
-#SBATCH --ntasks-per-node=36
-#SBATCH --time=02:00:00
-#
-ctest
-EOF
-}
-
-create_slurm_orion() {
-cat << EOF > run_slurm_job
-#!/bin/sh
-#SBATCH --account=epic-ps
-#SBATCH --qos=batch
-#SBATCH --partition=orion
-#SBATCH --nodes=12
-#SBATCH --ntasks-per-node=40
-#SBATCH --time=02:00:00
-#SBATCH --job-name="htf_ctest"
-#SBATCH --exclusive
-#
-ctest 
-EOF
-}
-
-# process required arguments
-if [[ ("$1" == "--help") || ("$1" == "-h") ]]; then
-  usage
-  exit 0
+# firt install aws-cli
+if [ -d "${HOME}/aws-cli" ]; then
+  echo "aws-cli existed" 
+else
+  CURRENT_FOLDER=${PWD}
+  cd
+  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"
+  unzip awscliv2.zip
+  ./aws/install -i ${HOME}/aws-cli -b ${HOME}/aws-cli/bin
+  cd ${CURRENT_FOLDER}
 fi
+export PATH=${HOME}/aws-cli/bin:$PATH
 
-# process optional arguments
-while :; do
-  case $1 in
-    --help|-h) usage; exit 0 ;;
-    --platform=?*|-p=?*) PLATFORM=${1#*=} ;;
-    --platform|--platform=|-p|-p=) usage_error "$1 requires argument." ;;
-    -d) DOWNLOAD=true ;;
-    -d=?*|-d=) usage_error "$1 argument ignored." ;;
-    -?*|?*) usage_error "Unknown option $1" ;;
-    *) break
-  esac
-  shift
-done
-
-# check if PLATFORM and UFS_ROOT is set
-if [ -z $PLATFORM ]; then
-  printf "\nERROR: Please set PLATFORM.\n\n"
-  usage
-  exit 0
-fi
+#Now check all fix data we need!
 
 #
-PLATFORM="${PLATFORM,,}"
-case ${PLATFORM} in
-  orion) create_slurm_orion ;;
-  hera)  create_slurm_hera ;;
-  gaea)  create_slurm_gaea ;;
-    *)
-      printf "WARNING: ${PLATFORM} is not supported yet! Stop now! \n"; exit 1 ;;
-esac
-
-
-# Download data for ctests
-if [ "${DOWNLOAD}" = true ] ; then
-
-  #
-  echo "get input data from s3!"
-
-  # firt install aws-cli
-  if [ -d "${HOME}/aws-cli" ]; then
-    echo "aws-cli existed" 
-  else
-    CURRENT_FOLDER=${PWD}
-    cd
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"
-    unzip awscliv2.zip
-    ./aws/install -i ${HOME}/aws-cli -b ${HOME}/aws-cli/bin
-    cd ${CURRENT_FOLDER}
-  fi
-  export PATH=${HOME}/aws-cli/bin:$PATH
-
-  # now download data for ctest cases
-
-  if [ -d "./input-data/FV3_fix" ]; then
-    echo "FV3_fix existed" 
-  else
-    echo "no input-data/FV3_fix, create now"
-    mkdir -p input-data/FV3_fix
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_fix input-data/FV3_fix --recursive
-  fi
-
-  # regional data
-  if [ -d "./input-data/fv3_regional_control" ]; then
-    echo "fv3_regional_control existed" 
-  else
-    echo "no input-data/fv3_regional_control, create now"
-    mkdir -p input-data/fv3_regional_control
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/fv3_regional_control input-data/fv3_regional_control --recursive
-  fi
-  if [ -d "./input-data/FV3_regional_input_data" ]; then
-    echo "FV3_regional_input_data existed" 
-  else
-    echo "no input-data/FV3_regional_input_data, create now"
-    mkdir -p input-data/FV3_regional_input_data
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_regional_input_data input-data/FV3_regional_input_data --recursive
-  fi
-
-  # FV3_fix_tiled 
-  if [ -d "./input-data/FV3_fix_tiled" ]; then
-    echo "FV3_fix_tiled existed" 
-  else
-    echo "no input-data/FV3_fix_tiled, create now"
-    mkdir -p input-data/FV3_fix_tiled
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_fix_tiled input-data/FV3_fix_tiled --recursive \
-            --exclude 'C384/*' --exclude 'C48/*'
-  fi
-
-  # CPL_FIX
-  if [ -d "./input-data/CPL_FIX" ]; then
-    echo "CPL_FIX existed" 
-  else
-    echo "no input-data/CPL_FIX, create now"
-    mkdir -p input-data/CPL_FIX
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/CPL_FIX input-data/CPL_FIX --recursive
-  fi
-
-  # CICE_FIX
-  if [ -d "./input-data/CICE_FIX" ]; then
-    echo "CICE_FIX existed" 
-  else
-    echo "no input-data/CICE_FIX, create now"
-    mkdir -p input-data/CICE_FIX
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/CICE_FIX input-data/CICE_FIX --recursive --exclude '400/*' --exclude '025/*'
-  fi
-
-  # CICE_IC
-  if [ -d "./input-data/CICE_IC" ]; then
-    echo "CICE_IC existed" 
-  else
-    echo "no input-data/CICE_IC, create now"
-    mkdir -p input-data/CICE_IC
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/CICE_IC input-data/CICE_IC --recursive --exclude '400/*' --exclude '025/*'
-  fi
-
-  # MOM6_FIX
-  if [ -d "./input-data/MOM6_FIX" ]; then
-    echo "MOM6_FIX existed" 
-  else
-    echo "no input-data/MOM6_FIX, create now"
-    mkdir -p input-data/MOM6_FIX
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/MOM6_FIX input-data/MOM6_FIX --recursive --exclude '400/*' --exclude '025/*'
-  fi
-
-  # MOM6_IC
-  if [ -d "./input-data/MOM6_IC" ]; then
-    echo "MOM6_IC existed" 
-  else
-    echo "no input-data/MOM6_IC, create now"
-    mkdir -p input-data/MOM6_IC
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/MOM6_IC input-data/MOM6_IC --recursive --exclude '400/*' --exclude '025/*'
-  fi
-
-  # WW3 
-  if [ -d "./input-data/WW3_input_data" ]; then
-    echo "WW3_input_data existed" 
-  else
-    echo "no input-data/WW3_input_data, create now"
-    mkdir -p input-data/WW3_input_data
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/WW3_input_data_20211113 input-data/WW3_input_data --recursive
-  fi
-
-  # GOCART
-  if [ -d "./input-data/GOCART" ]; then
-    echo "GOCART existed" 
-  else
-    echo "no input-data/GOCART, create now"
-    mkdir -p input-data/GOCART
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART input-data/GOCART --recursive --exclude '*' --include 'p8/*'
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART/ExtData/dust/randomforestensemble_uthres.nc ./input-data/GOCART/p8/ExtData/dust
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART/ExtData/dust/gocart.dust_source.v5a.x1152_y721.nc ./input-data/GOCART/p8/ExtData/dust
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART/ExtData/dust/FENGSHA_Albedo_drag_v1.nc ./input-data/GOCART/p8/ExtData/dust
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART/ExtData/dust/FENGSHA_SOILGRIDS2019_GEFSv12_v1.2.nc ./input-data/GOCART/p8/ExtData/dust
-  fi
-
-  # IMP_PHYSICS = 8
-  if [ -d "./input-data/FV3_input_data_gsd" ]; then
-    echo "FV3_input_data_gsd existed" 
-  else
-    echo "no input-data/FV3_input_data_gsd, create now"
-    mkdir -p input-data/FV3_input_data_gsd
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_input_data_gsd input-data/FV3_input_data_gsd --recursive \
+TMP_DIR=$WORK_DIR/fix_new/fix_fv3_gmted2010/C96
+TMP=${TMP_DIR}/C96_grid.tile6.nc
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_input_data/INPUT_L127
+if [ -f "${TMP}" ]; then
+  echo "${TMP} exists"
+else
+  echo "no ${TMP}, try get it from aws"
+  mkdir -p ${TMP_DIR}
+  aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive \
               --exclude '*' \
-              --include 'CCN_ACTIVATE.BIN' --include 'freezeH2O.dat' --include 'qr_acr_qgV2.dat' --include 'qr_acr_qsV2.dat' --include 'qr_acr_qg.dat' --include 'qr_acr_qs.dat'
-  fi
-
-  # merra2
-  if [ -d "./input-data/FV3_input_data_INCCN_aeroclim" ]; then
-    echo "FV3_input_data_INCCN_aeroclim existed" 
-  else
-    echo "no input-data/FV3_input_data_INCCN_aeroclim, create now"
-    mkdir -p input-data/FV3_input_data_INCCN_aeroclim
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_input_data_INCCN_aeroclim input-data/FV3_input_data_INCCN_aeroclim --recursive \
-              --exclude '*' \
-              --include 'MERRA2/*' --include 'aer_data/*'
-  fi
-
-  #C96
-  if [ -d "./input-data/FV3_input_data" ]; then
-    echo "FV3_input_data existed" 
-  else
-    echo "no input-data/FV3_input_data, create now"
-    mkdir -p input-data/FV3_input_data
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_input_data input-data/FV3_input_data --recursive
-  fi
-
-  #C192
-  if [ -d "./input-data/FV3_input_data192" ]; then
-    echo "FV3_input_data192 existed" 
-  else
-    echo "no input-data/FV3_input_data192, create now"
-    mkdir -p input-data/FV3_input_data192
-    aws s3 cp --no-sign-request s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_input_data192 input-data/FV3_input_data192 --recursive
-  fi
-
+              --include 'C96_mosaic.nc' \
+              --include 'C96_grid.tile*.nc'
 fi
+
+#
+TMP_DIR=$WORK_DIR/fix_new/fix_ugwd/C96
+TMP=${TMP_DIR}/C96_oro_data_ss.tile1.nc
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_input_data/INPUT_L127
+if [ -f "${TMP}" ]; then
+  echo "${TMP} exists"
+else
+  echo "no ${TMP}, try get it from aws"
+  mkdir -p ${TMP_DIR}
+  aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive \
+              --exclude '*' \
+              --include 'oro_data_ss.tile*.nc' \
+              --include 'oro_data_ls.tile*.nc'
+fi
+#rename
+FILES=$TMP_DIR/oro_data_*s.tile*.nc
+if [ -f $TMP_DIR/oro_data_ss.tile1.nc ]; then
+  for f in $FILES
+  do
+    echo "rename $(basename $f)"
+    mv $f $TMP_DIR/C96_$(basename $f)
+  done
+fi
+
+#
+TMP_DIR=$WORK_DIR/fix_new/fix_ugwd
+TMP=${TMP_DIR}/ugwp_limb_tau.nc
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_input_data
+if [ -f "${TMP}" ]; then
+  echo "${TMP} exists"
+else
+  echo "no ${TMP}, try get it from aws"
+  mkdir -p ${TMP_DIR}
+  aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive \
+              --exclude '*' \
+              --include 'ugwp_c384_tau.nc'
+fi
+#rename
+if [ -f $TMP_DIR/ugwp_c384_tau.nc ]; then
+  mv ${TMP_DIR}/ugwp_c384_tau.nc ${TMP}
+fi
+
+#
+TMP_DIR=$WORK_DIR/fix_new/fix_fv3_fracoro/C96.mx100_frac
+TMP=${TMP_DIR}/oro_C96.mx100.tile6.nc
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_fix_tiled/C96
+if [ -f "${TMP}" ]; then
+  echo "${TMP} exists"
+else
+  echo "no ${TMP}, try get it from aws"
+  mkdir -p ${TMP_DIR}
+  aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive \
+              --exclude '*' \
+              --include 'oro_C96.mx100.tile*.nc'
+fi
+
+#
+TMP_DIR=$WORK_DIR/fix_new/fix_fv3_fracoro/C96.mx100_frac/fix_sfc
+TMP=${TMP_DIR}/C96.snowfree_albedo.tile6.nc
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_fix_tiled/C96
+if [ -f "${TMP}" ]; then
+  echo "${TMP} exists"
+else
+  echo "no ${TMP}, try get it from aws"
+  mkdir -p ${TMP_DIR}
+  aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive \
+              --exclude 'oro_C96.mx100.tile*.nc'
+fi
+
+
+# check fix_lut folder
+TMP_DIR=$WORK_DIR/fix_new/fix_lut
+TMP=${TMP_DIR}/optics_BC.v1_3.dat
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_input_data_INCCN_aeroclim/aer_data/LUTS
+if [ -f "${TMP}" ]; then
+  echo "${TMP} exists"
+else
+  echo "no ${TMP}, try get it from aws"
+  mkdir -p ${TMP_DIR}
+  aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive \
+              --exclude '*' \
+              --include '*.dat'
+fi
+
+# check fix_aer folder
+TMP_DIR=$WORK_DIR/fix_new/fix_aer
+TMP=${TMP_DIR}/merra2.aerclim.2003-2014.m01.nc
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_input_data_INCCN_aeroclim/MERRA2
+if [ -f "${TMP}" ]; then
+  echo "${TMP} exists"
+else
+  echo "no ${TMP}, try get it from aws"
+  mkdir -p ${TMP_DIR} 
+  aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive \
+              --exclude '*' \
+              --include '*.nc'
+fi
+
+#
+TMP_DIR=$WORK_DIR/fix_new/fix_am
+TMP=${TMP_DIR}/qr_acr_qg.dat
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_input_data_gsd
+if [ -f "${TMP}" ]; then
+  echo "${TMP} exists"
+else
+  echo "no ${TMP}, try get it from aws"
+  mkdir -p ${TMP_DIR}
+  aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive \
+              --exclude '*' \
+              --include 'qr_acr_qg.dat' \
+              --include 'qr_acr_qs.dat'
+fi
+
+#
+TMP_DIR=$WORK_DIR/fix_new/fix_am
+TMP=${TMP_DIR}/global_soilmgldas.statsgo.t1534.3072.1536.grb
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_input_data
+if [ -f "${TMP}" ]; then
+  echo "${TMP} exists"
+else
+  echo "no ${TMP}, try get it from aws"
+  mkdir -p ${TMP_DIR}
+  aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive \
+              --exclude '*' \
+              --include 'global_soilmgldas.statsgo.t1534.3072.1536.grb' \
+              --include 'global_slmask.t1534.3072.1536.grb'
+fi
+
+#
+TMP_DIR=$WORK_DIR/fix_new/fix_am
+TMP=${TMP_DIR}/global_solarconstant_noaa_an.txt
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_fix
+if [ -f "${TMP}" ]; then
+  echo "${TMP} exists"
+else
+  echo "no ${TMP}, try get it from aws"
+  mkdir -p ${TMP_DIR} || true
+  aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive \
+              --exclude '*' \
+              --include 'fix_co2_proj/*' \
+              --include 'CCN_ACTIVATE.BIN' \
+              --include 'aerosol.dat' \
+              --include 'freezeH2O.dat' \
+              --include 'global_h2oprdlos.f77' \
+              --include 'global_o3prdlos.f77' \
+              --include 'sfc_emissivity_idx.txt' \
+              --include 'solarconstant_noaa_an.txt' \
+              --include 'global_glacier.2x2.grb' \
+              --include 'global_maxice.2x2.grb' \
+              --include 'RTGSST.1982.2012.monthly.clim.grb' \
+              --include 'global_snoclim.1.875.grb' \
+              --include 'CFSR.SEAICE.1982.2012.monthly.clim.grb'
+fi
+#reanme
+if [ -f $TMP_DIR/solarconstant_noaa_an.txt ]; then
+  mv ${TMP_DIR}/solarconstant_noaa_an.txt ${TMP_DIR}/global_solarconstant_noaa_an.txt
+  mv ${TMP_DIR}/aerosol.dat ${TMP_DIR}/global_climaeropac_global.txt
+  mv ${TMP_DIR}/global_h2oprdlos.f77 ${TMP_DIR}/global_h2o_pltc.f77
+  mv ${TMP_DIR}/global_o3prdlos.f77 ${TMP_DIR}/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77
+  mv ${TMP_DIR}/sfc_emissivity_idx.txt ${TMP_DIR}/global_sfc_emissivity_idx.txt
+  mv ${TMP_DIR}/fix_co2_proj/co2historicaldata_glob.txt ${TMP_DIR}/global_co2historicaldata_glob.txt
+  mv ${TMP_DIR}/fix_co2_proj/co2monthlycyc.txt ${TMP_DIR}/co2monthlycyc.txt
+fi
+#rename
+FILES=$TMP_DIR/fix_co2_proj/co2historicaldata_*.txt
+if [ -f $TMP_DIR/fix_co2_proj/co2historicaldata_2009.txt ]; then
+  for f in $FILES
+  do
+    echo "rename $(basename $f)"
+    mv $f $TMP_DIR/fix_co2_proj/global_$(basename $f)
+  done
+fi
+
+# for S2S model
+TMP_DIR=$WORK_DIR/fix_new/fix_cice/100
+TMP=${TMP_DIR}/mesh.mx100.nc
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/CICE_FIX/100
+if [ -f "${TMP}" ]; then
+  echo "${TMP} exists"
+else
+  echo "no ${TMP}, try get it from aws"
+  mkdir -p ${TMP_DIR} || true
+  aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive
+fi
+
+TMP_DIR=$WORK_DIR/fix_new/fix_mom6/100
+TMP=${TMP_DIR}/MOM_channels_SPEAR
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/MOM6_FIX/100
+if [ -f "${TMP}" ]; then
+  echo "${TMP} exists"
+else
+  echo "no ${TMP}, try get it from aws"
+  mkdir -p ${TMP_DIR} || true
+  aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive
+fi
+
+#
+TMP_DIR=$WORK_DIR/fix_new/fix_cpl/aC96o100
+TMP=${TMP_DIR}/grid_spec.nc
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/CPL_FIX/aC96o100
+if [ -f "${TMP}" ]; then
+  echo "${TMP} exists"
+else
+  echo "no ${TMP}, try get it from aws"
+  mkdir -p ${TMP_DIR} || true
+  aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive
+fi
+
+
+# gen link
+ln -fs ${WORK_DIR}/fix_new/fix_* ${WORK_DIR}/../global-workflow/fix/

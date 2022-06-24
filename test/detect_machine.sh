@@ -1,30 +1,6 @@
 #!/bin/bash
 
-# Do not set ACCNR here or it will break the per-system defaults in rt.sh.
-
 case $(hostname -f) in
-
-  llogin1)                 MACHINE_ID=wcoss_cray ;; ### luna
-  llogin2)                 MACHINE_ID=wcoss_cray ;; ### luna
-  llogin3)                 MACHINE_ID=wcoss_cray ;; ### luna
-
-  slogin1)                 MACHINE_ID=wcoss_cray ;; ### surge
-  slogin2)                 MACHINE_ID=wcoss_cray ;; ### surge
-  slogin3)                 MACHINE_ID=wcoss_cray ;; ### surge
-
-  v71a1.ncep.noaa.gov)     MACHINE_ID=wcoss_dell_p3 ;; ### venus
-  v71a2.ncep.noaa.gov)     MACHINE_ID=wcoss_dell_p3 ;; ### venus
-  v71a3.ncep.noaa.gov)     MACHINE_ID=wcoss_dell_p3 ;; ### venus
-  v72a1.ncep.noaa.gov)     MACHINE_ID=wcoss_dell_p3 ;; ### venus
-  v72a2.ncep.noaa.gov)     MACHINE_ID=wcoss_dell_p3 ;; ### venus
-  v72a3.ncep.noaa.gov)     MACHINE_ID=wcoss_dell_p3 ;; ### venus
-
-  m71a1.ncep.noaa.gov)     MACHINE_ID=wcoss_dell_p3 ;; ### mars
-  m71a2.ncep.noaa.gov)     MACHINE_ID=wcoss_dell_p3 ;; ### mars
-  m71a3.ncep.noaa.gov)     MACHINE_ID=wcoss_dell_p3 ;; ### mars
-  m72a1.ncep.noaa.gov)     MACHINE_ID=wcoss_dell_p3 ;; ### mars
-  m72a2.ncep.noaa.gov)     MACHINE_ID=wcoss_dell_p3 ;; ### mars
-  m72a3.ncep.noaa.gov)     MACHINE_ID=wcoss_dell_p3 ;; ### mars
 
   clogin01.cactus.wcoss2.ncep.noaa.gov)	  MACHINE_ID=wcoss2 ;; ### cactus
   clogin02.cactus.wcoss2.ncep.noaa.gov)	  MACHINE_ID=wcoss2 ;; ### cactus
@@ -46,24 +22,6 @@ case $(hostname -f) in
   dlogin08.dogwood.wcoss2.ncep.noaa.gov)  MACHINE_ID=wcoss2 ;; ### dogwood
   dlogin09.dogwood.wcoss2.ncep.noaa.gov)  MACHINE_ID=wcoss2 ;; ### dogwood
 
-  gaea9)                   MACHINE_ID=gaea ;; ### gaea9
-  gaea10)                  MACHINE_ID=gaea ;; ### gaea10
-  gaea11)                  MACHINE_ID=gaea ;; ### gaea11
-  gaea12)                  MACHINE_ID=gaea ;; ### gaea12
-  gaea13)                  MACHINE_ID=gaea ;; ### gaea13
-  gaea14)                  MACHINE_ID=gaea ;; ### gaea14
-  gaea15)                  MACHINE_ID=gaea ;; ### gaea15
-  gaea16)                  MACHINE_ID=gaea ;; ### gaea16
-  gaea9.ncrc.gov)          MACHINE_ID=gaea ;; ### gaea9
-  gaea10.ncrc.gov)         MACHINE_ID=gaea ;; ### gaea10
-  gaea11.ncrc.gov)         MACHINE_ID=gaea ;; ### gaea11
-  gaea12.ncrc.gov)         MACHINE_ID=gaea ;; ### gaea12
-  gaea13.ncrc.gov)         MACHINE_ID=gaea ;; ### gaea13
-  gaea14.ncrc.gov)         MACHINE_ID=gaea ;; ### gaea14
-  gaea15.ncrc.gov)         MACHINE_ID=gaea ;; ### gaea15
-  gaea16.ncrc.gov)         MACHINE_ID=gaea ;; ### gaea16
-  nid*)                    MACHINE_ID=gaea ;; ### gaea c4 computing nodes
-
   hfe01)                   MACHINE_ID=hera ;; ### hera01
   hfe02)                   MACHINE_ID=hera ;; ### hera02
   hfe03)                   MACHINE_ID=hera ;; ### hera03
@@ -80,17 +38,6 @@ case $(hostname -f) in
   h*c*)                    MACHINE_ID=hera ;; ### hera computing node
 
   s4-submit.ssec.wisc.edu) MACHINE_ID=s4 ;; ### s4
-
-  fe1)                     MACHINE_ID=jet ;; ### jet01
-  fe2)                     MACHINE_ID=jet ;; ### jet02
-  fe3)                     MACHINE_ID=jet ;; ### jet03
-  fe4)                     MACHINE_ID=jet ;; ### jet04
-  fe5)                     MACHINE_ID=jet ;; ### jet05
-  fe6)                     MACHINE_ID=jet ;; ### jet06
-  fe7)                     MACHINE_ID=jet ;; ### jet07
-  fe8)                     MACHINE_ID=jet ;; ### jet08
-  tfe1)                    MACHINE_ID=jet ;; ### jet09
-  tfe2)                    MACHINE_ID=jet ;; ### jet10
 
   Orion-login-1.HPC.MsState.Edu) MACHINE_ID=orion ;; ### orion1
   Orion-login-2.HPC.MsState.Edu) MACHINE_ID=orion ;; ### orion2
@@ -117,11 +64,6 @@ case $(hostname -f) in
   chadmin5.ib0.cheyenne.ucar.edu) MACHINE_ID=cheyenne ;; ### cheyenne1
   chadmin6.ib0.cheyenne.ucar.edu) MACHINE_ID=cheyenne ;; ### cheyenne1
 
-  login1.stampede2.tacc.utexas.edu) MACHINE_ID=stampede ;; ### stampede1
-  login2.stampede2.tacc.utexas.edu) MACHINE_ID=stampede ;; ### stampede2
-  login3.stampede2.tacc.utexas.edu) MACHINE_ID=stampede ;; ### stampede3
-  login4.stampede2.tacc.utexas.edu) MACHINE_ID=stampede ;; ### stampede4
-
-  login01.expanse.sdsc.edu) MACHINE_ID=expanse ;; ### expanse1
-  login02.expanse.sdsc.edu) MACHINE_ID=expanse ;; ### expanse2
 esac
+
+export PLATFORM=${MACHINE_ID}

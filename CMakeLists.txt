@@ -127,5 +127,4 @@ configure_file(
 
 FILE(COPY "${CMAKE_CURRENT_BINARY_DIR}/ufs_htf_meta.h" DESTINATION include)
 
-#add_subdirectory(src)
 add_subdirectory(test)
