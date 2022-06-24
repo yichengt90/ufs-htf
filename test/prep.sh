@@ -265,6 +265,11 @@ else
   aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive
 fi
 
+#get inputdata
+aws s3 cp --no-sign-request s3://my-ufs-inputdata/2019071100.tar.gz ./inputdata/
+cd ./inputdata
+tar -zxvf 2019071100.tar.gz
+cd ..
 
 # gen link
 if [ -z $GW_DIR ]; then
