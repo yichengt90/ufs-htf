@@ -47,7 +47,6 @@ Settings:
   wtime_post_gfs=${_wtime_post_gfs}
   wtime_vrfy_gfs=${_wtime_vrfy_gfs}
   wtime_arch_gfs=${_wtime_arch_gfs}
-  ARCH_GAUSSIAN_FHINC=${_ARCH_GAUSSIAN_FHINC}
 EOF_SETTINGS
 }
 
@@ -96,7 +95,7 @@ export _wtime_fcst_gfs="00:30:00"
 export _wtime_post_gfs="00:30:00"
 export _wtime_vrfy_gfs="00:30:00"
 export _wtime_arch_gfs="00:30:00"
-export _ARCH_GAUSSIAN_FHINC="3"
+#export _ARCH_GAUSSIAN_FHINC="3"
 
 # process required arguments
 if [[ ("$1" == "--help") || ("$1" == "-h") ]]; then
@@ -169,7 +168,7 @@ sed -i -r "s#^(export ACCOUNT=).*#\1$_ACCOUNT#" ${TEST_DIR}/expdir/${APP}_c${GRI
 sed -i -r "s#^(export QUEUE=).*#\1$_QUEUE#" ${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}/config.base
 sed -i -r "s#^(export PARTITION_BATCH=).*#\1$_PARTITION_BATCH#" ${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}/config.base
 #arch
-sed -i -r "s#^(export ARCH_GAUSSIAN_FHINC=).*#\1$_ARCH_GAUSSIAN_FHINC#" ${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}/config.arch
+#sed -i -r "s#^(export ARCH_GAUSSIAN_FHINC=).*#\1$_ARCH_GAUSSIAN_FHINC#" ${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}/config.arch
 
 # link ufs_model
 ln -fs  ${GW_DIR}/sorc/ufs_model.fd/build/ufs_model ${GW_DIR}/exec/
