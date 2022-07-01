@@ -58,6 +58,6 @@ my_xticks=['11/00z','','11/12z','','12/00z','','12/12z','','13/00z','','13/12z',
 plt.xlabel('Date/Time (UTC)')
 plt.ylabel('Maximum surface wind (kt)')
 frequency=2
-plt.xticks(t,my_xticks)
+plt.xticks(tb,my_xticks)
 # plt.show()
 plt.savefig('./tracker_ws_Barry_ufs.png')
