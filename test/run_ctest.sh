@@ -207,10 +207,12 @@ sed -i 's/\@\[MOM6_ALLOW_LANDMASK_CHANGES\]/true/g' ${GW_DIR}/parm/mom6/MOM_inpu
 sed -i -e '$aRESTART_CHECKSUMS_REQUIRED = False' ${GW_DIR}/parm/mom6/MOM_input_template_100
 sed -i "s#MOM6_RESTART_SETTING='n'#MOM6_RESTART_SETTING='r'#g" ${GW_DIR}/ush/parsing_namelists_MOM6.sh
 
-# remove ocnpost task; TODO: find better way to handle this part for ctest!
+#tmp fix: remove ocnpost task; TODO: find better way to handle this part for ctest!
 if [ "${CTEST}" = true ] ; then
   if [ "${APP}" == "S2S" ]; then
     sed -i.bak -e '363,401d;460d' ${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}/${APP}_c${GRID}_${CASE}.xml 
+    # tmp fix: do not resource s2sw config!
+    sed -i '196s/source $EXPDIR\/config.defaults.s2sw/#source $EXPDIR\/config.defaults.s2sw/g' ${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}/config.base
   fi
 
   # now start rocotorun for ctest!
