@@ -5,17 +5,25 @@ usage() {
   echo "Usage: $0 -p <path of global workflow> | -h "
   echo
   echo "  -p GW_DIR"
+  echo "  -a aGRID"
+  echo "  -o oGRID"
   echo "  -h  print this help message and exit"
   echo
   exit 1
 }
 
+#default vaules
+aGRID="96"
+oGRID="100"
 GW_DIR=""
-while getopts ":p:h" flag;
+
+while getopts ":p:a:o:h" flag;
 
 do
         case "${flag}" in
                 p) GW_DIR="${OPTARG}";;
+                a) aGRID="${OPTARG}";;
+                o) oGRID="${OPTARG}";;
                 h) usage;;
                 *) echo "Invalid options: -$flag" ;;
         esac
@@ -43,9 +51,17 @@ export PATH=${HOME}/aws-cli/bin:$PATH
 #Now check all fix data we need!
 
 #
-TMP_DIR=$WORK_DIR/fix_new/fix_fv3_gmted2010/C96
-TMP=${TMP_DIR}/C96_grid.tile6.nc
-AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_input_data/INPUT_L127
+TMP_DIR=$WORK_DIR/fix_new/fix_fv3_gmted2010/C${aGRID}
+TMP=${TMP_DIR}/C${aGRID}_grid.tile6.nc
+REMOTE_DIR_base=FV3_input_data
+if [ ${aGRID} == "96" ]; then
+  REMOTE_DIR=${REMOTE_DIR_base}
+else
+  REMOTE_DIR=${REMOTE_DIR_base}${aGRID}
+fi
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/${REMOTE_DIR}/INPUT_L127
+#file1="C${aGRID}_mosaic.nc"
+#file2="C${aGRID}_grid.tile*.nc"
 if [ -f "${TMP}" ]; then
   echo "${TMP} exists"
 else
@@ -53,14 +69,20 @@ else
   mkdir -p ${TMP_DIR}
   aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive \
               --exclude '*' \
-              --include 'C96_mosaic.nc' \
-              --include 'C96_grid.tile*.nc'
+              --include 'C*_mosaic.nc' \
+              --include 'C*_grid.tile*.nc'
 fi
 
 #
-TMP_DIR=$WORK_DIR/fix_new/fix_ugwd/C96
-TMP=${TMP_DIR}/C96_oro_data_ss.tile1.nc
-AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_input_data/INPUT_L127
+TMP_DIR=$WORK_DIR/fix_new/fix_ugwd/C${aGRID}
+TMP=${TMP_DIR}/C${aGRID}_oro_data_ss.tile1.nc
+REMOTE_DIR_base=FV3_input_data
+if [ ${aGRID} == "96" ]; then
+  REMOTE_DIR=${REMOTE_DIR_base}
+else
+  REMOTE_DIR=${REMOTE_DIR_base}${aGRID}
+fi
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/${REMOTE_DIR}/INPUT_L127
 if [ -f "${TMP}" ]; then
   echo "${TMP} exists"
 else
@@ -77,7 +99,7 @@ if [ -f $TMP_DIR/oro_data_ss.tile1.nc ]; then
   for f in $FILES
   do
     echo "rename $(basename $f)"
-    mv $f $TMP_DIR/C96_$(basename $f)
+    mv $f $TMP_DIR/C${aGRID}_$(basename $f)
   done
 fi
 
@@ -100,9 +122,9 @@ if [ -f $TMP_DIR/ugwp_c384_tau.nc ]; then
 fi
 
 #
-TMP_DIR=$WORK_DIR/fix_new/fix_fv3_fracoro/C96.mx100_frac
-TMP=${TMP_DIR}/oro_C96.mx100.tile6.nc
-AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_fix_tiled/C96
+TMP_DIR=$WORK_DIR/fix_new/fix_fv3_fracoro/C${aGRID}.mx${oGRID}_frac
+TMP=${TMP_DIR}/oro_C${aGRID}.mx${oGRID}.tile6.nc
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_fix_tiled/C${aGRID}
 if [ -f "${TMP}" ]; then
   echo "${TMP} exists"
 else
@@ -110,20 +132,20 @@ else
   mkdir -p ${TMP_DIR}
   aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive \
               --exclude '*' \
-              --include 'oro_C96.mx100.tile*.nc'
+              --include 'oro_C*.mx*.tile*.nc'
 fi
 
 #
-TMP_DIR=$WORK_DIR/fix_new/fix_fv3_fracoro/C96.mx100_frac/fix_sfc
-TMP=${TMP_DIR}/C96.snowfree_albedo.tile6.nc
-AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_fix_tiled/C96
+TMP_DIR=$WORK_DIR/fix_new/fix_fv3_fracoro/C${aGRID}.mx${oGRID}_frac/fix_sfc
+TMP=${TMP_DIR}/C${aGRID}.snowfree_albedo.tile6.nc
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/FV3_fix_tiled/C${aGRID}
 if [ -f "${TMP}" ]; then
   echo "${TMP} exists"
 else
   echo "no ${TMP}, try get it from aws"
   mkdir -p ${TMP_DIR}
   aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive \
-              --exclude 'oro_C96.mx100.tile*.nc'
+              --exclude 'oro_C*.mx*.tile*.nc'
 fi
 
 
@@ -231,9 +253,9 @@ if [ -f $TMP_DIR/fix_co2_proj/co2historicaldata_2009.txt ]; then
 fi
 
 # for S2S model
-TMP_DIR=$WORK_DIR/fix_new/fix_cice/100
-TMP=${TMP_DIR}/mesh.mx100.nc
-AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/CICE_FIX/100
+TMP_DIR=$WORK_DIR/fix_new/fix_cice/${oGRID}
+TMP=${TMP_DIR}/mesh.mx${oGRID}.nc
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/CICE_FIX/${oGRID}
 if [ -f "${TMP}" ]; then
   echo "${TMP} exists"
 else
@@ -242,9 +264,9 @@ else
   aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive
 fi
 
-TMP_DIR=$WORK_DIR/fix_new/fix_mom6/100
+TMP_DIR=$WORK_DIR/fix_new/fix_mom6/${oGRID}
 TMP=${TMP_DIR}/MOM_channels_SPEAR
-AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/MOM6_FIX/100
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/MOM6_FIX/${oGRID}
 if [ -f "${TMP}" ]; then
   echo "${TMP} exists"
 else
@@ -254,9 +276,9 @@ else
 fi
 
 #
-TMP_DIR=$WORK_DIR/fix_new/fix_cpl/aC96o100
+TMP_DIR=$WORK_DIR/fix_new/fix_cpl/aC${aGRID}o${oGRID}
 TMP=${TMP_DIR}/grid_spec.nc
-AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/CPL_FIX/aC96o100
+AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/CPL_FIX/aC${aGRID}o${oGRID}
 if [ -f "${TMP}" ]; then
   echo "${TMP} exists"
 else
@@ -265,13 +287,13 @@ else
   aws s3 cp --no-sign-request ${AWS_PATH} ${TMP_DIR} --recursive
 fi
 
-#get inputdata
-if [ -f ./inputdata/2019071100.tar.gz ]; then
-   echo "./inputdata/2019071100.tar.gz already there!"
+#get inputdata for ctest cases!
+if [ -f ./inputdata/2019071200.tar.gz ]; then
+   echo "./inputdata/2019071200.tar.gz already there!"
 else
-   aws s3 cp --no-sign-request s3://my-ufs-inputdata/2019071100.tar.gz ./inputdata/
+   aws s3 cp --no-sign-request s3://my-ufs-inputdata/2019071200.tar.gz ./inputdata/
    cd ./inputdata
-   tar -zxvf 2019071100.tar.gz
+   tar -zxvf 2019071200.tar.gz
    cd ..
 fi
 

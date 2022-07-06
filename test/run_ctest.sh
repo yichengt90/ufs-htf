@@ -80,12 +80,12 @@ VERBOSE=false
 CTEST=false
 
 # variables that could be redifined by users later
-export FCST_HR=3
+export FCST_HR=6
 export METP="NO"
 export GLDAS="NO"
 export SYEAR=2019
 export SMONTH=07
-export SDAY=11
+export SDAY=12
 export SHR=00
 #
 export _ACCOUNT="epic-ps"
@@ -95,7 +95,7 @@ export _wtime_fcst_gfs="00:30:00"
 export _wtime_post_gfs="00:30:00"
 export _wtime_vrfy_gfs="00:30:00"
 export _wtime_arch_gfs="00:30:00"
-#export _ARCH_GAUSSIAN_FHINC="3"
+export _FHOUT_GFS="6"
 
 # process required arguments
 if [[ ("$1" == "--help") || ("$1" == "-h") ]]; then
@@ -167,7 +167,8 @@ sed -i -r "s#^(export FHMAX_GFS_18=).*#\1$FCST_HR#" ${TEST_DIR}/expdir/${APP}_c$
 sed -i -r "s#^(export ACCOUNT=).*#\1$_ACCOUNT#" ${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}/config.base
 sed -i -r "s#^(export QUEUE=).*#\1$_QUEUE#" ${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}/config.base
 sed -i -r "s#^(export PARTITION_BATCH=).*#\1$_PARTITION_BATCH#" ${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}/config.base
-#arch
+#output
+sed -i -r "s#^(export FHOUT_GFS=).*#\1$_FHOUT_GFS#" ${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}/config.base
 #sed -i -r "s#^(export ARCH_GAUSSIAN_FHINC=).*#\1$_ARCH_GAUSSIAN_FHINC#" ${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}/config.arch
 
 # link ufs_model

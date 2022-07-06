@@ -20,6 +20,6 @@ load_module
 # run ws_ts py script
 TEST_DIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )" )" && pwd -P)
 echo "TEST_DIR is ${TEST_DIR}"
-ln -fs ${TEST_DIR}/comrot/ATM_c96_Barry/gfs.20190711/00/atmos/trak.gfso.atcfunix.altg.2019071100 ./trak.gfso.atcfunix.altg.2019071100.atm
-ln -fs ${TEST_DIR}/comrot/S2S_c96_Barry/gfs.20190711/00/atmos/trak.gfso.atcfunix.altg.2019071100 ./trak.gfso.atcfunix.altg.2019071100.s2s
+ln -fs ${TEST_DIR}/comrot/ATM_c96_Barry/gfs.20190712/00/atmos/trak.gfso.atcfunix.altg.2019071200 ./trak.gfso.atcfunix.altg.2019071200.atm
+ln -fs ${TEST_DIR}/comrot/S2S_c96_Barry/gfs.20190712/00/atmos/trak.gfso.atcfunix.altg.2019071200 ./trak.gfso.atcfunix.altg.2019071200.s2s
 python ./vrfy/Barry_ws_ts.py
