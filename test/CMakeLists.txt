@@ -10,7 +10,8 @@ set( obs_data
 
 #
 set( vrfy_scripts
-  ${CMAKE_CURRENT_SOURCE_DIR}/vrfy/Barry_ws_ts.py 
+#  ${CMAKE_CURRENT_SOURCE_DIR}/vrfy/Barry_ws_ts.py 
+  ${CMAKE_CURRENT_SOURCE_DIR}/vrfy/Barry_track.py
 )
 
 #
@@ -85,7 +86,7 @@ add_test ( NAME test_S2S_c96_Barry
 set_tests_properties(test_S2S_c96_Barry PROPERTIES TIMEOUT 7200)
 
 #
-add_test ( NAME test_Barry_WS_TimeSeries
+add_test ( NAME test_Barry_track
            COMMAND bash run_ws_ts.sh
            WORKING DIRECTORY ${CMAKE_BINARY_DIR}/test )
-set_tests_properties(test_Barry_WS_TimeSeries PROPERTIES TIMEOUT 7200)
+set_tests_properties(test_Barry_track PROPERTIES TIMEOUT 7200)
