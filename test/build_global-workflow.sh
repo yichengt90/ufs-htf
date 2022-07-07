@@ -43,7 +43,7 @@ cd ../../global-workflow/sorc; WRK_PWD=$(pwd)
 sh checkout.sh                                                                                                                               
 
 # turn off build options -------------------------------------------------------                                                                                                                   
-sed -i '5s/yes/no/g' gfs_build.cfg
+#sed -i '5s/yes/no/g' gfs_build.cfg
 sed -i '6s/yes/no/g' gfs_build.cfg                                                                                                        
 sed -i '7s/yes/no/g' gfs_build.cfg
 sed -i '8s/yes/no/g' gfs_build.cfg

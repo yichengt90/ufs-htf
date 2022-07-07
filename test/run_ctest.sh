@@ -186,7 +186,7 @@ sed -i 's/PARTITION_SERVICE "service"/PARTITION_SERVICE "'"${_PARTITION_BATCH}"'
 
 # check if inputdata is existed TODO: download examples from somewhere? 
 if [[ -f ${TEST_DIR}/inputdata/${SYEAR}${SMONTH}${SDAY}${SHR}/atmos/C${GRID}/INPUT/gfs_ctrl.nc ]]; then
-  echo "${TEST_DIR}/inputdata/${SYEAR}${SMONTH}${SDAY}${SHR}/atmos/C${GRID}/INPUT/gfs_ctrl.nc exists! Copy to comrot"
+  echo "${TEST_DIR}/inputdata/${SYEAR}${SMONTH}${SDAY}${SHR}/atmos/C${GRID}/INPUT/gfs_ctrl.nc exists! Copy to icsdir/comrot"
   mkdir -p ${TEST_DIR}/icsdir
   cp -r ${TEST_DIR}/inputdata/${SYEAR}${SMONTH}${SDAY}${SHR} ${TEST_DIR}/icsdir
   mkdir -p ${TEST_DIR}/comrot/${APP}_c${GRID}_${CASE}/gfs.${SYEAR}${SMONTH}${SDAY}/${SHR}/atmos/INPUT
@@ -194,6 +194,20 @@ if [[ -f ${TEST_DIR}/inputdata/${SYEAR}${SMONTH}${SDAY}${SHR}/atmos/C${GRID}/INP
 else
   echo "\n Cannot find inputdata! Please check!\n\n"
   exit 1
+fi
+
+# for wave-related apps
+if [ ${GRID} = "96" ]; then
+  oGRID=100
+elif [ ${GRID} = "192" ]; then
+  oGRID=050
+else
+  oGRID=025
+fi
+#echo ${oGRID}
+if [[ -f ${TEST_DIR}/icsdir/${SYEAR}${SMONTH}${SDAY}${SHR}/wave/rundata/gfswave.mod_def.mx${oGRID} ]]; then
+  echo "${TEST_DIR}/inputdata/${SYEAR}${SMONTH}${SDAY}${SHR}/wave/rundata/gfswave.mod_def.mx${oGRID} exists! Copy to comrot"
+  cp -r ${TEST_DIR}/icsdir/${SYEAR}${SMONTH}${SDAY}${SHR}/wave ${TEST_DIR}/comrot/${APP}_c${GRID}_${CASE}/gfs.${SYEAR}${SMONTH}${SDAY}/${SHR}/
 fi
 
 # tmp fix for 100 ocn MOM_input
@@ -208,12 +222,24 @@ sed -i 's/\@\[MOM6_ALLOW_LANDMASK_CHANGES\]/true/g' ${GW_DIR}/parm/mom6/MOM_inpu
 sed -i -e '$aRESTART_CHECKSUMS_REQUIRED = False' ${GW_DIR}/parm/mom6/MOM_input_template_100
 sed -i "s#MOM6_RESTART_SETTING='n'#MOM6_RESTART_SETTING='r'#g" ${GW_DIR}/ush/parsing_namelists_MOM6.sh
 
+# tmp fix 100 wav
+if [ "${APP}" == "S2SW" ]; then
+  sed -i '25s/MEDPETS=300/#MEDPETS=300/g' ${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}/config.defaults.s2sw
+  sed -i 's/mx025/mx'${oGRID}'/g' ${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}/config.defaults.s2sw
+  sed -i 's/reg025/reg'${oGRID}'/g' ${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}/config.defaults.s2sw
+  sed -i 's/mx025/mx'${oGRID}'/g' ${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}/config.resources
+fi
+
 #tmp fix: remove ocnpost task; TODO: find better way to handle this part for ctest!
 if [ "${CTEST}" = true ] ; then
-  if [ "${APP}" == "S2S" ]; then
+  if [ "${APP}" = "S2S" ]; then
+    echo "remove ocnpost for ctest!"
     sed -i.bak -e '363,401d;460d' ${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}/${APP}_c${GRID}_${CASE}.xml 
     # tmp fix: do not resource s2sw config!
     sed -i '196s/source $EXPDIR\/config.defaults.s2sw/#source $EXPDIR\/config.defaults.s2sw/g' ${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}/config.base
+  elif [ "${APP}" = "S2SW" ]; then
+    echo "remove ocnpost and wavepost for ctest!"
+    sed -i.bak -e '392,492d;551,553d' ${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}/${APP}_c${GRID}_${CASE}.xml
   fi
 
   # now start rocotorun for ctest!
