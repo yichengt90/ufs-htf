@@ -10,7 +10,7 @@ UFS Hierarchical Testing Framework Users Guide
    :numbered:
    :maxdepth: 3
    
-
+   IntroHTF
    BuildHTF
    AddTest
    Glossary
