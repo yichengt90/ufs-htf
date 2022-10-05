@@ -69,8 +69,9 @@ usage_error () {
 
 # default settings
 TEST_DIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )" )" && pwd -P)
-ROOT_DIR="$(dirname $(dirname "$TEST_DIR"))"
+ROOT_DIR="$(dirname "$TEST_DIR")"
 GW_DIR=${ROOT_DIR}/global-workflow
+TEST_DIR=$(pwd)
 APP="ATM"
 GRID="96"
 CASE=""

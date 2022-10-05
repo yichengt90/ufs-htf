@@ -1,0 +1,19 @@
+base_git: '/lustre/git'
+base_svn: '/lustre/svn'
+dmpdir: '/lustre/dump'
+nwprod: '/lustre/nwpara'
+comroot: '/lustre/com'
+homedir: '/lustre'
+stmp: '/lustre'
+ptmp: '/lustre'
+noscrub: $HOMEDIR
+scheduler: slurm
+account: compute
+queue: batch
+queue_service: service
+partition_batch: compute
+chgrp_rstprod: 'YES'
+chgrp_cmd: 'chgrp rstprod'
+hpssarch: 'NO'
+localarch: 'NO'
+atardir: '$NOSCRUB/archive_rotdir/$PSLOT'

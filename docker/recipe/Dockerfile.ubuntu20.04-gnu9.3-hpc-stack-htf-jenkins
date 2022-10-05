@@ -1,0 +1,12 @@
+FROM noaaepic/ubuntu20.04-gnu9.3-hpc-stack:v1.2b
+LABEL AUTHOR EPIC
+WORKDIR /home/builder/ufs-htf
+COPY ./ ./
+RUN git config --global --add safe.directory /home/builder/ufs-htf
+#WORKDIR /home/builder
+#RUN bash ./ufs-htf/docker/launch.sh
+#RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+#RUN bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /home/builder/miniconda
+#ENV PATH=$PATH:/home/builder/miniconda/bin
+#RUN python -m pip install awscli
+WORKDIR /home/builder/ufs-htf

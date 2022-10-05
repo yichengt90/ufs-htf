@@ -1,0 +1,5 @@
+FROM clouden90/ubuntu20.04-gnu9.3.spack-stack:ufswm
+LABEL AUTHOR clouden90
+WORKDIR /home/builder/ufs-htf
+COPY ./ ./
+RUN git config --global --add safe.directory /home/builder/ufs-htf

@@ -69,8 +69,9 @@ usage_error () {
 
 # default settings
 TEST_DIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )" )" && pwd -P)
-ROOT_DIR="$(dirname $(dirname "$TEST_DIR"))"
+ROOT_DIR="$(dirname "$TEST_DIR")"
 GW_DIR=${ROOT_DIR}/global-workflow
+TEST_DIR=$(pwd)
 APP="ATM"
 GRID="96"
 CASE=""
@@ -259,7 +260,21 @@ if [ "${CTEST}" = true ] ; then
   fi
 #
   set +eu
+  #
+  export HOMEgfs=${GW_DIR}
+  export RUN_ENVIR="emc"
   export EXPDIR="${TEST_DIR}/expdir/${APP}_c${GRID}_${CASE}_norocoto"
+  export ROTDIR="${TEST_DIR}/comrot/${APP}_c${GRID}_${CASE}_norocoto"
+  export CDUMP="gfs"
+  export CDATE="${SYEAR}${SMONTH}${SDAY}${SHR}"
+  export PDY="${SYEAR}${SMONTH}${SDAY}"
+  export cyc="${SHR}"
+  . ${EXPDIR}/config.base
+  . ${EXPDIR}/config.fcst
+  echo "NTASKS_TOT = ${npe_fcst_gfs}"
+  echo "ntasks-per-node = ${npe_node_fcst_gfs}"
+  export fcst_node=$(echo "$npe_fcst_gfs / $npe_node_fcst_gfs + 1" | bc)
+  #
   [ -f ./job_card ] && rm job_card
   [ -f ./out ] && rm out
   [ -f ./err ] && rm err
@@ -270,9 +285,9 @@ cat > job_card<<EOF
 #SBATCH --account=epic-ps
 #SBATCH --qos=debug
 ####SBATCH --partition=orion
-### #SBATCH --ntasks=360
-#SBATCH --nodes=10
-#SBATCH --ntasks-per-node=40
+### #SBATCH --ntasks=${npe_fcst_gfs}
+#SBATCH --nodes=${fcst_node}
+#SBATCH --ntasks-per-node=${npe_node_fcst_gfs}
 #SBATCH --time=30
 #SBATCH --job-name="htf_fcst_test"
 #SBATCH --exclusive

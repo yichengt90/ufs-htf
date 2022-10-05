@@ -42,7 +42,8 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 cd ${ROOT_DIR}/global-workflow/sorc; WRK_PWD=$(pwd)
 
 # checkout components -------------------------------------------------------------
-sh checkout.sh                                                                                                                               
+sed -i 's/Prototype-P8/develop/g' checkout.sh 
+bash checkout.sh                                                                                                                               
 
 # turn off build options -------------------------------------------------------                                                                                                                   
 #sed -i '5s/yes/no/g' gfs_build.cfg
@@ -51,11 +52,20 @@ sh checkout.sh
 #sed -i '8s/yes/no/g' gfs_build.cfg
 #sed -i '11s/yes/no/g' gfs_build.cfg
 
-#
-ln -fs ${ROOT_DIR}/docker/parsing_namelists_CICE.sh.P8 ${ROOT_DIR}/docker/parsing_namelists_CICE.sh
-
 # build and link components -------------------------------------------------------                                                           
-sh build_all.sh $build_option                                                                                                                       
+if [[ -f gfs_build.cfg.bak ]]; then
+   echo "found gfs_build.cfg.bak! do nothing!"
+else
+   echo "back up gfs_build.cfg!"
+   cp ./gfs_build.cfg ./gfs_build.cfg.bak
+   cp ./build_ufs.sh ./build_ufs.sh.bak
+   echo "cp gfs_build.cfg from docker folder!"   
+   cp ${ROOT_DIR}/docker/gfs_build.cfg ./
+   cp ${ROOT_DIR}/docker/build_ufs.sh  ./
+   cp ${ROOT_DIR}/docker/DOCKER.env ${ROOT_DIR}/global-workflow/env/
+   ln -fs ${ROOT_DIR}/docker/parsing_namelists_CICE.sh.develop ${ROOT_DIR}/docker/parsing_namelists_CICE.sh 
+fi
+bash build_all.sh $build_option                                                                                                                       
 #logfile="logs/build_ufs.log"
 #if [[ -f $logfile ]] ; then
 #  target=$(grep 'target=' $logfile | awk -F. '{print $1}' | awk -F= '{print $2}')

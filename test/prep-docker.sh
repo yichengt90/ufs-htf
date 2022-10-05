@@ -37,17 +37,18 @@ CURR_DIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )" )" && pwd -P)
 echo $WORK_DIR
 
 # firt install aws-cli
-if [ -d "${HOME}/aws-cli" ]; then
-  echo "aws-cli existed" 
-else
-  CURRENT_FOLDER=${PWD}
-  cd
-  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"
-  unzip awscliv2.zip
-  ./aws/install -i ${HOME}/aws-cli -b ${HOME}/aws-cli/bin
-  cd ${CURRENT_FOLDER}
-fi
-export PATH=${HOME}/aws-cli/bin:$PATH
+pip install numpy awscli netCDF4
+#if [ -d "${HOME}/aws-cli" ]; then
+#  echo "aws-cli existed" 
+#else
+#  CURRENT_FOLDER=${PWD}
+#  cd
+#  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"
+#  unzip awscliv2.zip
+#  ./aws/install -i ${HOME}/aws-cli -b ${HOME}/aws-cli/bin
+#  cd ${CURRENT_FOLDER}
+#fi
+#export PATH=${HOME}/aws-cli/bin:$PATH
 
 #Now check all fix data we need!
 
@@ -267,7 +268,7 @@ else
 fi
 
 TMP_DIR=$WORK_DIR/fix_new/fix_mom6/${oGRID}
-TMP=${TMP_DIR}/MOM_channels_SPEAR
+TMP=${TMP_DIR}/ocean_mask.nc
 AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/MOM6_FIX/${oGRID}
 if [ -f "${TMP}" ]; then
   echo "${TMP} exists"
@@ -291,93 +292,111 @@ fi
 
 #for GOCART
 #
-if [ -f $WORK_DIR/fix_new/gocart_emissions.tar.gz ]; then
-   echo "$WORK_DIR/fix_new/gocart_emissions.tar.gz already there!"
-else
-   aws s3 cp --no-sign-request s3://my-ufs-inputdata/gocart_emissions.tar.gz ./fix_new/
-   cd ./fix_new
-   tar -zxvf gocart_emissions.tar.gz
-   cd ..
-fi
+#if [ -f $WORK_DIR/fix_new/gocart_emissions.tar.gz ]; then
+#   echo "$WORK_DIR/fix_new/gocart_emissions.tar.gz already there!"
+#else
+#   aws s3 cp --no-sign-request s3://my-ufs-inputdata/gocart_emissions.tar.gz ./fix_new/
+#   cd ./fix_new
+#   tar -zxvf gocart_emissions.tar.gz
+#   cd ..
+#fi
 #
-TMP_DIR=$WORK_DIR/fix_new/gocart_emissions/monochromatic
-TMP=${TMP_DIR}/optics_SU.v1_3.nc
-AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART
-if [ -f "${TMP}" ]; then
-  echo "${TMP} exists"
-else
-  echo "no ${TMP}, try get it from aws"
-  mkdir -p ${TMP_DIR} || true
-  aws s3 cp --no-sign-request ${AWS_PATH}/p8/ExtData/monochromatic/ ${TMP_DIR} --recursive \
-              --exclude '*' \
-              --include '*.nc'
-fi
-#
-TMP_DIR=$WORK_DIR/fix_new/gocart_emissions/optics
-TMP=${TMP_DIR}/opticsBands_SU.v1_3.RRTMG.nc
-AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART
-if [ -f "${TMP}" ]; then
-  echo "${TMP} exists"
-else
-  echo "no ${TMP}, try get it from aws"
-  mkdir -p ${TMP_DIR} || true
-  aws s3 cp --no-sign-request ${AWS_PATH}/p8/ExtData/optics/ ${TMP_DIR} --recursive \
-              --exclude '*' \
-              --include 'opticsBands_BC.v1_3.RRTMG.nc' \
-              --include 'opticsBands_OC.v1_3.RRTMG.nc' \
-              --include 'opticsBands_DU.v15_3.RRTMG.nc' \
-              --include 'opticsBands_NI.v2_5.RRTMG.nc' \
-              --include 'opticsBands_SS.v3_3.RRTMG.nc' \
-              --include 'opticsBands_SU.v1_3.RRTMG.nc'
-fi
-#
-#TMP_DIR=$WORK_DIR/fix_new/gocart_emissions/MERRA2/sfc
-#TMP=${TMP_DIR}/DMSclim_sfcconcentration.x360_y181_t12.Lana2011.nc
+#TMP_DIR=$WORK_DIR/fix_new/gocart_emissions/monochromatic
+#TMP=${TMP_DIR}/optics_SU.v1_3.nc
 #AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART
 #if [ -f "${TMP}" ]; then
 #  echo "${TMP} exists"
 #else
 #  echo "no ${TMP}, try get it from aws"
 #  mkdir -p ${TMP_DIR} || true
-#  aws s3 cp --no-sign-request ${AWS_PATH}/p8/ExtData/MERRA2/sfc/ ${TMP_DIR} --recursive \
+#  aws s3 cp --no-sign-request ${AWS_PATH}/p8/ExtData/monochromatic/ ${TMP_DIR} --recursive \
 #              --exclude '*' \
-#              --include '*.nc4'
-#mv $TMP_DIR/DMSclim_sfcconcentration.x360_y181_t12.Lana2011.nc4 $TMP 
+#              --include '*.nc'
 #fi
 #
-TMP_DIR=$WORK_DIR/fix_new/gocart_emissions/PIESA/sfc
-TMP=${TMP_DIR}/sfc/HTAP/v2.2/htap-v2.2.emis_so2.aviation_lto.x3600_y1800_t12.2010.nc4
-AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART
-if [ -f "${TMP}" ]; then
-  echo "${TMP} exists"
-else
-  echo "no ${TMP}, try get it from aws"
-  mkdir -p ${TMP_DIR} || true
-  aws s3 cp --no-sign-request ${AWS_PATH}/p8/ExtData/PIESA/sfc/ ${TMP_DIR} --recursive
-fi
+#TMP_DIR=$WORK_DIR/fix_new/gocart_emissions/optics
+#TMP=${TMP_DIR}/opticsBands_SU.v1_3.RRTMG.nc
+#AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART
+#if [ -f "${TMP}" ]; then
+#  echo "${TMP} exists"
+#else
+#  echo "no ${TMP}, try get it from aws"
+#  mkdir -p ${TMP_DIR} || true
+#  aws s3 cp --no-sign-request ${AWS_PATH}/p8/ExtData/optics/ ${TMP_DIR} --recursive \
+#              --exclude '*' \
+#              --include 'opticsBands_BC.v1_3.RRTMG.nc' \
+#              --include 'opticsBands_OC.v1_3.RRTMG.nc' \
+#              --include 'opticsBands_DU.v15_3.RRTMG.nc' \
+#              --include 'opticsBands_NI.v2_5.RRTMG.nc' \
+#              --include 'opticsBands_SS.v3_3.RRTMG.nc' \
+#              --include 'opticsBands_SU.v1_3.RRTMG.nc'
+#fi
 #
-TMP_DIR=$WORK_DIR/fix_new/gocart_emissions/Dust
-TMP=${TMP_DIR}/gocart.dust_source.v5a.x1152_y721.nc
-AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART
-if [ -f "${TMP}" ]; then
-  echo "${TMP} exists"
-else
-  echo "no ${TMP}, try get it from aws"
-  mkdir -p ${TMP_DIR} || true
-  aws s3 cp --no-sign-request ${AWS_PATH}/ExtData/dust/ ${TMP_DIR} --recursive \
-              --exclude '*' \
-              --include 'gocart.dust_source.v5a.x1152_y721.nc'
-fi
+##TMP_DIR=$WORK_DIR/fix_new/gocart_emissions/MERRA2/sfc
+##TMP=${TMP_DIR}/DMSclim_sfcconcentration.x360_y181_t12.Lana2011.nc
+##AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART
+##if [ -f "${TMP}" ]; then
+##  echo "${TMP} exists"
+##else
+##  echo "no ${TMP}, try get it from aws"
+##  mkdir -p ${TMP_DIR} || true
+##  aws s3 cp --no-sign-request ${AWS_PATH}/p8/ExtData/MERRA2/sfc/ ${TMP_DIR} --recursive \
+##              --exclude '*' \
+##              --include '*.nc4'
+##mv $TMP_DIR/DMSclim_sfcconcentration.x360_y181_t12.Lana2011.nc4 $TMP 
+##fi
+##
+#TMP_DIR=$WORK_DIR/fix_new/gocart_emissions/PIESA/sfc
+#TMP=${TMP_DIR}/HTAP/v2.2/htap-v2.2.emis_so2.aviation_lto.x3600_y1800_t12.2010.nc4
+#AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART
+#if [ -f "${TMP}" ]; then
+#  echo "${TMP} exists"
+#else
+#  echo "no ${TMP}, try get it from aws"
+#  mkdir -p ${TMP_DIR} || true
+#  aws s3 cp --no-sign-request ${AWS_PATH}/p8/ExtData/PIESA/sfc/ ${TMP_DIR} --recursive
+#fi
+##
+#TMP_DIR=$WORK_DIR/fix_new/gocart_emissions/Dust
+#TMP=${TMP_DIR}/gocart.dust_source.v5a.x1152_y721.nc
+#AWS_PATH=s3://noaa-ufs-regtests-pds/input-data-20220414/GOCART
+#if [ -f "${TMP}" ]; then
+#  echo "${TMP} exists"
+#else
+#  echo "no ${TMP}, try get it from aws"
+#  mkdir -p ${TMP_DIR} || true
+#  aws s3 cp --no-sign-request ${AWS_PATH}/ExtData/dust/ ${TMP_DIR} --recursive \
+#              --exclude '*' \
+#              --include 'gocart.dust_source.v5a.x1152_y721.nc'
+#fi
 
 #get inputdata for ctest cases!
-if [ -f ./inputdata/2019071200.tar.gz ]; then
-   echo "./inputdata/2019071200.tar.gz already there!"
+#if [ -f ./inputdata/2019071200.tar.gz ]; then
+#   echo "./inputdata/2019071200.tar.gz already there!"
+#else
+#   aws s3 cp --no-sign-request s3://my-ufs-inputdata/2019071200.tar.gz ./inputdata/
+#   cd ./inputdata
+#   tar -zxvf 2019071200.tar.gz
+#   cd ..
+#fi
+
+#
+if [ -f ./inputdata/2021032306.tar.gz ]; then
+   echo "./inputdata/2021032306.tar.gz already there!"
 else
-   aws s3 cp --no-sign-request s3://my-ufs-inputdata/2019071200.tar.gz ./inputdata/
+   aws s3 cp --no-sign-request s3://my-ufs-inputdata/2021032306.tar.gz ./inputdata/
    cd ./inputdata
-   tar -zxvf 2019071200.tar.gz
+   tar -zxvf 2021032306.tar.gz
    cd ..
 fi
+
+if [ -d ./ref ]; then
+   echo "./ref folder already there!"
+else
+   aws s3 cp --no-sign-request s3://my-ufs-inputdata/20220922_ref_toy.tar.gz ./
+   tar -zxvf 20220922_ref_toy.tar.gz
+fi
+
 
 # gen link
 if [ -z $GW_DIR ]; then
@@ -396,10 +415,10 @@ ln -fs ${GW_DIR}/sorc/ufs_model.fd/FV3/upp ${GW_DIR}/sorc/upp.fd
 ln -fs  ${GW_DIR}/sorc/ufs_model.fd/build/ufs_model ${GW_DIR}/exec/
 ln -fs ${GW_DIR}/sorc/ufs_model.fd/tests/ufs_model.x ${GW_DIR}/exec/
 #link utils
-for workflowexec in enkf_chgres_recenter.x enkf_chgres_recenter_nc.x fv3nc2nemsio.x \
-    tave.x vint.x reg2grb2.x ; do
-  ln -fs ${GW_DIR}/sorc/install/bin/$workflowexec ${GW_DIR}/exec/
-done
+#for workflowexec in enkf_chgres_recenter.x enkf_chgres_recenter_nc.x fv3nc2nemsio.x \
+#    tave.x vint.x reg2grb2.x ; do
+#  ln -fs ${GW_DIR}/sorc/install/bin/$workflowexec ${GW_DIR}/exec/
+#done
 
 
 #

@@ -1,0 +1,45 @@
+# syntax=docker/dockerfile:1.4.0
+FROM clouden90/ubuntu20.04-spack:latest
+
+LABEL AUTHOR EPIC
+
+# 1. git clone htf repo
+RUN cd /opt; \
+    git clone --recurse-submodules -b docker https://github.com/clouden90/ufs-htf.git;
+
+# 2. install ncep 
+RUN /bin/bash -c 'source /opt/ufs-htf/docker/launch.sh && \
+    spack add prod-util && spack install'
+
+# 3. set env
+ENV NDATE /opt/spack-stack/envs/ufs-srw.intel/.spack-env/view/bin/ndate
+ENV NHOUR /opt/spack-stack/envs/ufs-srw.intel/.spack-env/view/bin/nhour
+ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-zen2/gcc-9.4.0/intel-oneapi-compilers-2022.1.0-jsh6uhe5p4y4niwduxrkqdqzpx4hvzsw/compiler/latest/linux/compiler/lib/intel64"
+
+# 4. build htf
+RUN /bin/bash -c 'source /opt/ufs-htf/docker/launch.sh && \
+    cd /opt/ufs-htf && \
+    mkdir build && cd build && \
+    cmake .. && \ 
+    ctest -N'
+
+#  All the ctests:
+#  Test #1: docker_build_ufs
+#  Test #2: docker_stage_ufs_data
+#  Test #3: docker_ATM_c48_toy
+#  Test #4: docker_S2S_c48_toy
+
+# 5. test ufs build 
+RUN /bin/bash -c 'source /opt/ufs-htf/docker/launch.sh && \
+    cd /opt/ufs-htf/build/test && \
+    ctest -VV -R docker_build_ufs'
+
+# 6. test staging data from aws
+RUN /bin/bash -c 'source /opt/ufs-htf/docker/launch.sh && \
+    cd /opt/ufs-htf/build/test && \
+    ctest -VV -R docker_stage_ufs_data'
+
+# 7. test S2S c48 case
+RUN /bin/bash -c 'source /opt/ufs-htf/docker/launch.sh && \
+    cd /opt/ufs-htf/build/test && \
+    ctest -VV -R docker_S2S_c48_toy'

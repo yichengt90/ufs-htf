@@ -1,0 +1,13 @@
+# syntax=docker/dockerfile:1.4.0
+FROM clouden90/ubuntu20.04-spack:latest
+
+LABEL AUTHOR EPIC
+
+# 1. git clone htf repo
+WORKDIR /opt
+RUN git clone -b docker https://github.com/clouden90/ufs-htf.git
+
+# 2. install ncep prod-util 
+WORKDIR /opt/ufs-htf
+RUN /bin/bash -c 'source ./docker/launch.sh && \
+    spack add prod-util && spack install'
